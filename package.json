@@ -1,0 +1,36 @@
+{
+  "name": "lost-build",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "axios": "^1.6.7",
+    "framer-motion": "^11.0.3",
+    "next": "14.1.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  },
+  "description": "- Ability to upload your own accessories (limited to legendary, relic, and ancient accessories) - Can choose up to 6 engravings - If applicable, multiple builds can be created - Able to filter based on highest amount of engravings vs highest combat stats - Ability to categorize accessories per character - Show what is missing based off the desired build/inputted accessories - Ability to choose which engraving to prioritize at level 3",
+  "main": "layout.tsx",
+  "author": "Brandon Kim",
+  "license": "ISC"
+}
