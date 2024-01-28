@@ -16,6 +16,7 @@ export type Reduction = Stat & {
 /** ACCESSORIES */
 
 export interface Accessory {
+    uid: number;
     combatOne: CombatStat;
     combatTwo?: CombatStat;
     engravingOne: Engraving;
@@ -40,6 +41,7 @@ export interface AbilityStone {
 /** BUILD */
 
 export interface Build {
+    [key: string]: Necklace | Accessory | Engraving | AbilityStone | undefined;
     necklace: Necklace;
     earringOne: Accessory;
     earringTwo: Accessory;
@@ -47,6 +49,6 @@ export interface Build {
     ringTwo: Accessory;
     engravingBookOne: Engraving;
     engravingBookTwo: Engraving;
-    abilityStone: any;
+    abilityStone: AbilityStone;
 }
 

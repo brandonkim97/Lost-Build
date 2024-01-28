@@ -10,13 +10,16 @@ export async function GET(
 ) {
   try {
     const data = request.nextUrl.searchParams.get('data');
+    const desiredEngravings = request.nextUrl.searchParams.get('desiredEngravings');
     // Perform some server-side processing using the received data
 
-    if (!data || typeof data === "undefined") return;
+    if (!data || typeof data === "undefined" || !desiredEngravings || typeof desiredEngravings === "undefined") {
+      throw new Error('Data undefined');
+    }
 
     // Send a modified JSON response back to the client
-    generateBuilds(JSON.parse(data));
-    return NextResponse.json(data);
+    const res = await generateBuilds(JSON.parse(data), JSON.parse(desiredEngravings));
+    return NextResponse.json(res);
   } catch (error: any) {
     console.error('Error processing data:', error);
 

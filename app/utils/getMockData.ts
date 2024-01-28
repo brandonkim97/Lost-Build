@@ -3,6 +3,7 @@ import { AbilityStone, Accessory, Engraving } from "../types";
 export default function getMockData() {
     const acc: Accessory[] = [
         {
+            uid: 1,
             combatOne: {
                 name: 'CRIT',
                 value: 483,
@@ -27,6 +28,7 @@ export default function getMockData() {
             type: 'NECKLACE'
         },
         {
+            uid: 2,
             combatOne: {
                 name: 'SPECIALIZATION',
                 value: 287,
@@ -47,6 +49,7 @@ export default function getMockData() {
             type: 'EARRING'
         },
         {
+            uid: 3,
             combatOne: {
                 name: 'SPECIALIZATION',
                 value: 1,
@@ -67,6 +70,7 @@ export default function getMockData() {
             type: 'EARRING'
         },
         {
+            uid: 4,
             combatOne: {
                 name: 'SPECIALIZATION',
                 value: 1,
@@ -87,6 +91,7 @@ export default function getMockData() {
             type: 'RING'
         },
         {
+            uid: 5,
             combatOne: {
                 name: 'SPECIALIZATION',
                 value: 1,
@@ -115,7 +120,7 @@ export default function getMockData() {
         { name: 'RAID_CAPTAIN', value: 12 },
     ];
 
-    const abilityStone: AbilityStone[] = [
+    const abilityStones: AbilityStone[] = [
         {
             engravingOne: {
                 name: 'HIT_MASTER',
@@ -143,12 +148,40 @@ export default function getMockData() {
                 name: 'MOVE_SPEED_REDUCTION',
                 value: 2,
             }
-        }
+        },
+        {
+            engravingOne: {
+                name: 'GRUDGE',
+                value: 9,
+            },
+            engravingTwo: {
+                name: 'ADRENALINE',
+                value: 6,
+            },
+            reduction: {
+                name: 'MOVE_SPEED_REDUCTION',
+                value: 2,
+            }
+        },
+        {
+            engravingOne: {
+                name: 'MASTER_BRAWLER',
+                value: 9,
+            },
+            engravingTwo: {
+                name: 'KEEN_BLUNT_WEAPON',
+                value: 6,
+            },
+            reduction: {
+                name: 'MOVE_SPEED_REDUCTION',
+                value: 2,
+            }
+        },
     ];
 
     return {
         accessories: acc,
         engravingBooks: engravingBooks,
-        abilityStone: abilityStone,
+        abilityStones: abilityStones,
     };
 }
