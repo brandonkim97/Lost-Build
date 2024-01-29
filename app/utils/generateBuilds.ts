@@ -33,18 +33,22 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
     } = data;
     const builds: Build[] = [];
 
+    console.log('1')
     //filter desired items
     const filteredBooks = engravingBooks.filter((value, index) => {
         return Object.values(desiredEngravings).includes(value.name);
     });
+    console.log('2')
     const filteredStones = abilityStones.filter((value, index) => {
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name);
     });
+    console.log('3')
     const filteredAccessories = accessories.filter((value, index) => {
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name)
     });
+    console.log('4')
     //generate all engraving book pairs
     let bookPairs = generateBookPairs(filteredBooks);
 

@@ -13,6 +13,10 @@ export type Reduction = Stat & {
         "ATTACK_POWER_REDUCTION"
 };
 
+export interface Book extends Stat {
+    value: 3 | 6 | 9 | 12;
+}
+
 /** ACCESSORIES */
 
 export interface Accessory {

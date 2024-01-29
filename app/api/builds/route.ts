@@ -13,7 +13,7 @@ export async function GET(
     const desiredEngravings = request.nextUrl.searchParams.get('desiredEngravings');
     // Perform some server-side processing using the received data
 
-    if (!data || typeof data === "undefined" || !desiredEngravings || typeof desiredEngravings === "undefined") {
+    if (!data || !data.length || !desiredEngravings || !desiredEngravings.length) {
       throw new Error('Data undefined');
     }
 

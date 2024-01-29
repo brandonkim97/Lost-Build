@@ -1,4 +1,4 @@
-import { AbilityStone, Accessory, Engraving } from "../types";
+import { AbilityStone, Accessory, Book, Engraving } from "../types";
 
 export default function getMockData() {
     const acc: Accessory[] = [
@@ -113,7 +113,7 @@ export default function getMockData() {
         },
     ];
 
-    const engravingBooks: Engraving[] = [
+    const engravingBooks: Book[] = [
         { name: 'ADRENALINE', value: 12 },
         { name: 'GRUDGE', value: 12 },
         { name: 'EMPRESS_GRACE', value: 12 },

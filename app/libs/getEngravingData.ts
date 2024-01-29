@@ -192,3 +192,10 @@ export const engravings = {
     'SUPER_CHARGE': 'Super Charge',
     'VITAL_POINT_HIT': 'Vital Point Hit',
 }
+
+export const engravingLevels = [
+    3,
+    6,
+    9,
+    12,
+]
