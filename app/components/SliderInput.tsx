@@ -17,7 +17,7 @@ interface IParams {
     min?: number;
     max: number;
     name: string;
-    value: number;
+    value: any;
     onChange: (e: number, v: string) => void;
     noSlider?: boolean;
 }

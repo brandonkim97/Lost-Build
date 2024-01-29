@@ -1,7 +1,7 @@
 import { Button, FormControl } from "@chakra-ui/react";
 import Input from "./Input";
 import { ChangeEvent, useState } from "react";
-import { engravingLevels } from "@/app/libs/getEngravingData";
+import { bookLevels } from "@/app/libs/getEngravingData";
 
 interface AddEngravingBookProps  {
     engravingOptions: {};
@@ -10,32 +10,34 @@ interface AddEngravingBookProps  {
 const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     engravingOptions,
 }) => {
-    const [book, setBook] = useState({
+    const dataInitialState = {
         name: '',
         value: 0,
-    })
+    }
+    const [book, setBook] = useState(dataInitialState)
 
     const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
-        const parseValue = typeof value !== 'number' ? parseFloat(value) : value;
+        const parsed = name === 'value' ? parseInt(value, 10) : value;
 
         setBook({
             ...book,
-            [name]: value,
+            [name]: parsed,
         });
     }
 
+    
+
     const handleSubmit = () => {
-        console.log('submitting...')
         const bookString = localStorage.getItem('engraving-book');
         const bookArray = bookString ? JSON.parse(bookString) : [];
         bookArray.push(book);
         localStorage.setItem('engraving-book', JSON.stringify(bookArray));
-        console.log(bookArray)
+        setBook(dataInitialState);
     }
 
-    const levelOptions = Object.entries(engravingLevels).map(([key, value]) => (
-        <option key={key} value={value}>{value}</option>
+    const bookLevelOptions = Object.entries(bookLevels).map(([key, value]) => (
+        <option key={key} value={key}>{value}</option>
       ));
 
     return (
@@ -51,7 +53,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
             <Input
                 label="Select level"
                 name="value"
-                options={levelOptions}
+                options={bookLevelOptions}
                 onChange={handleChange}
                 value={book.value}
                 required
@@ -63,4 +65,4 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     )
 }
 
-export default  AddEngravingBook;
+export default AddEngravingBook;

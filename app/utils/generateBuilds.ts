@@ -22,7 +22,8 @@ interface Count {
 }
 
 interface EngravingLevels {
-    [key: string]: number | Build;
+    levels: { [key: string]: number };
+    build: Build;
 }
 
 export default async function generateBuild(data: DataParams, desiredEngravings: Required<DesiredParams>) {
@@ -33,24 +34,21 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
     } = data;
     const builds: Build[] = [];
 
-    console.log('1')
     //filter desired items
     const filteredBooks = engravingBooks.filter((value, index) => {
         return Object.values(desiredEngravings).includes(value.name);
     });
-    console.log('2')
     const filteredStones = abilityStones.filter((value, index) => {
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name);
     });
-    console.log('3')
     const filteredAccessories = accessories.filter((value, index) => {
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name)
     });
-    console.log('4')
     //generate all engraving book pairs
     let bookPairs = generateBookPairs(filteredBooks);
+    // console.log(bookPairs)
 
     //create builds
     const unique = new Set<string>;
@@ -75,7 +73,6 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
 
     //get top 3 builds
     const top3 = getTopThreeBuilds(levels);
-    // console.log(top3)
     return top3;
 }
 
@@ -160,30 +157,29 @@ function getEngravingLevels(builds: Build[]) {
     const res: EngravingLevels[] = [];
 
     for (const build of builds) {
-        let eng: EngravingLevels = {};
+        let eng: EngravingLevels = { levels: {}, build: build};
         for (const key in build) {
             switch(key) {
                 case 'engravingBookOne':
                 case 'engravingBookTwo':
-                    (eng[build[key].name] as number) += build[key].value;
+                    (eng['levels'][build[key].name] as number) += build[key].value;
                     break;
                 default:
                     const bld = (build[key] as Accessory | AbilityStone | Necklace);
 
-                    eng[bld.engravingOne.name] = 
-                        bld.engravingOne.name in eng ? 
-                        (eng[bld.engravingOne.name] as number) + bld.engravingOne.value : 
+                    eng['levels'][bld.engravingOne.name] = 
+                        bld.engravingOne.name in eng['levels'] ? 
+                        (eng['levels'][bld.engravingOne.name] as number) + bld.engravingOne.value : 
                         bld.engravingOne.value;
 
-                    eng[bld.engravingTwo.name] = 
-                        bld.engravingTwo.name in eng ? 
-                        (eng[bld.engravingTwo.name] as number) + bld.engravingTwo.value : 
+                    eng['levels'][bld.engravingTwo.name] = 
+                        bld.engravingTwo.name in eng['levels'] ? 
+                        (eng['levels'][bld.engravingTwo.name] as number) + bld.engravingTwo.value : 
                         bld.engravingTwo.value;
 
                     break;
             }
         }
-        eng['build'] = build;
         res.push(eng);
     }
 
@@ -191,28 +187,27 @@ function getEngravingLevels(builds: Build[]) {
 }
 
 function getTopThreeBuilds(levels: EngravingLevels[]) {
-    const map = new Map<number, Build[]>();
+    const map = new Map<number, EngravingLevels[]>();
     const res = [];
     let count = parseInt(process.env.NUM_BUILDS as string, 10);
     const maxNodes = parseInt(process.env.MAX_NODES as string, 10);
-
-    for (const build of levels) {
+    // console.log(levels)
+    for (const data of levels) {
         let level1 = 0, level2 = 0, level3 = 0;
-        for (const key in build) {
-            if (key === "build") continue;
-            if ((build[key] as number) >= 15) level3 += 15;
-            else if ((build[key] as number) >= 10) level2 += 10;
-            else if ((build[key] as number) >= 5) level1 += 5;
+        for (const key in data.levels) {
+            if ((data['levels'][key] as number) >= 15) level3 += 15;
+            else if ((data['levels'][key] as number) >= 10) level2 += 10;
+            else if ((data['levels'][key] as number) >= 5) level1 += 5;
         }
         const total = level1 + level2 + level3;
-        push(map, total, (build.build as Build));
+        push(map, total, data);
     }
     // console.log(map);
 
     for (let i = maxNodes; i >= 0; i--) {
         if (map.has(i)) {
             const builds = map.get(i);
-            for (const build of (builds as Build[])) {
+            for (const build of (builds as EngravingLevels[])) {
                 if (!count) return res;
                 res.push(build);
                 count--;
@@ -223,7 +218,7 @@ function getTopThreeBuilds(levels: EngravingLevels[]) {
     return res;
 }
 
-function push(map: Map<number, Build[]>, key: number, value: Build) {
+function push(map: Map<number, EngravingLevels[]>, key: number, value: EngravingLevels) {
     if (map.has(key)) {
         map.get(key)?.push(value);
     } else {

@@ -4,6 +4,8 @@ import SliderInput from "../SliderInput";
 import { Button, Flex, FormControl } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useState } from "react";
 import Input from "./Input";
+import { engravingLevels } from '@/app/libs/getEngravingData';
+import { formatAccessory } from '@/app/utils/formatData';
 
 interface AddAccessoryProps  {
     engravingOptions: {};
@@ -50,17 +52,36 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
 
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
+    const parsed = parseString(name, value);
     setData({
       ...data,
-      [name]: value,
+      [name]: parsed,
     });
   }
 
   const handleSliderChange = (value: any, name: string) => {
+    const parsed = parseString(name, value);
     setData({
       ...data,
-      [name]: value,
+      [name]: parsed,
     });
+  }
+
+  const parseString = (e: any, v: any) => {
+    let res;
+    switch(e) {
+      case 'combatOneValue':
+      case 'combatTwoValue':
+      case 'engravingOneValue':
+      case 'engravingTwoValue':
+      case 'reductionValue':
+        res = parseInt(v, 10);
+        break;
+      default:
+        res = v;
+        break;
+    }
+    return res;
   }
 
   const handleSubmit = () => {
@@ -69,29 +90,38 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     const existingArrayString = localStorage.getItem('accessories');
     const existingArray = existingArrayString ? JSON.parse(existingArrayString) : [];
 
+    //format data
+    const formattedAccessory = formatAccessory(data)
     // Add new data to the array
-    existingArray.push(data);
+    existingArray.push(formattedAccessory);
 
     // Store the updated array back in local storage
     localStorage.setItem('accessories', JSON.stringify(existingArray));
+    setData(dataInitialState);
     setIsLoading(false);
   }
 
   const types = Object.entries(getAccessoryTypes()).map(([key, value]) => (
-    <option key={key} value={value}>{value}</option>
+    <option key={key} value={key}>{value}</option>
   ));
 
   const stats = Object.entries(getCombatStats()).map(([key, value]) => (
-    <option key={key} value={value}>{value}</option>
+    <option key={key} value={key}>{value}</option>
   ));
 
   const reduction = Object.entries(getReduction()).map(([key, value]) => (
-    <option key={key} value={value}>{value}</option>
+    <option key={key} value={key}>{value}</option>
   ));
 
+  const engravings = Object.entries(engravingLevels).map(([key, value]) => {
+    return (
+        <option key={key} value={key}>{value}</option>
+    )
+  });
+
   let maxStat = 0;
-  if (data.type === 'Necklace') maxStat = 500;
-  else if (data.type === 'Earring') maxStat = 300;
+  if (data.type === 'NECKLACE') maxStat = 500;
+  else if (data.type === 'EARRING') maxStat = 300;
   else maxStat = 200;
 
   return (
@@ -120,7 +150,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
         value={data.combatOneValue}
         onChange={handleSliderChange} 
       />
-      {data.type === 'Necklace' && (
+      {data.type === 'NECKLACE' && (
         <>
           <Input 
             label="Select combat stat"
@@ -146,6 +176,14 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
         value={data.engravingOne}
         required
       />
+      <Input
+          label="Select level"
+          name="engravingOneValue"
+          options={engravings}
+          onChange={handleChange}
+          value={data.engravingOneValue}
+          required
+      />
       <Input 
         label="Select engraving"
         name="engravingTwo"
@@ -153,6 +191,14 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
         onChange={handleChange}
         value={data.engravingTwo}
         required
+      />
+      <Input
+          label="Select level"
+          name="engravingTwoValue"
+          options={engravings}
+          onChange={handleChange}
+          value={data.engravingTwoValue}
+          required
       />
       <Input 
         label="Select reduction"
