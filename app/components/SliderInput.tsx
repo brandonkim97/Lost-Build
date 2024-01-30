@@ -6,12 +6,8 @@ import {
     NumberInput, 
     NumberInputField, 
     NumberInputStepper, 
-    Slider, 
-    SliderFilledTrack, 
-    SliderThumb, 
-    SliderTrack 
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { Slider } from "@/components/ui/slider"
 
 interface IParams {
     min?: number;
@@ -21,6 +17,8 @@ interface IParams {
     onChange: (e: number, v: string) => void;
     noSlider?: boolean;
 }
+
+type SliderProps = React.ComponentProps<typeof Slider>
 
 const SliderInput: React.FC<IParams> = ({
     min,
@@ -49,20 +47,12 @@ const SliderInput: React.FC<IParams> = ({
         </NumberInput>
         {!noSlider &&
             <Slider
-                flex='1'
-                focusThumbOnChange={false}
-                value={value}
-                onChange={(e: any) => onChange(e, name)}
+                value={[value]}
+                onValueChange={(e: any) => onChange(e, name)}
                 min={min}
                 max={max}
-                >
-                <SliderTrack>
-                    <SliderFilledTrack />
-                </SliderTrack>
-                <SliderThumb fontSize='sm' boxSize='32px'>
-                    {value}
-                </SliderThumb>
-            </Slider>
+                step={1}
+            />
         }
       </Flex>
     )

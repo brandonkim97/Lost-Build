@@ -12,6 +12,7 @@ import AddEngravingBook from "./components/inputs/AddEngravingBook";
 import AddAbilityStone from "./components/inputs/AddAbilityStone";
 import SelectEngraving from "./components/inputs/SelectEngraving";
 import { useToast } from "@chakra-ui/react";
+import { SelectItem } from "@/components/ui/select";
 
 interface EngravingLevels {
   levels: { [key: string]: number };
@@ -99,7 +100,7 @@ export default function Home() {
 
   const engravingOptions = useMemo(() => {
     return Object.entries(engravings).map(([key, value]) => (
-      <option key={key} value={key}>{value}</option>
+      <SelectItem key={key} value={key}>{value}</SelectItem>
     ));
   }, []);
 
@@ -126,7 +127,7 @@ export default function Home() {
         <Flex gap="4" flexDirection="column" className="my-6">
           <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
         </Flex>
-        <Flex>
+        <Flex gap="4" flexDirection="column" className="my-6">
           <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
         </Flex>
         <Flex>

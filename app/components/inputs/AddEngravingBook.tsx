@@ -1,8 +1,16 @@
-import { Button, FormControl } from "@chakra-ui/react";
 import Input from "./Input";
 import { ChangeEvent, useState } from "react";
 import { bookLevels } from "@/app/libs/getEngravingData";
-
+import { SelectItem } from "@/components/ui/select";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+  } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 interface AddEngravingBookProps  {
     engravingOptions: {};
     setItemData: (e: any) => void;
@@ -14,22 +22,17 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
 }) => {
     const dataInitialState = {
         name: '',
-        value: 0,
+        value: '',
     }
     const [book, setBook] = useState(dataInitialState)
 
-    const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        const parsed = name === 'value' ? parseInt(value, 10) : value;
+    const handleChange = (e: string, v: string) => setBook({ ...book, [e]: v === 'value' ? parseInt(v, 10): v });
 
-        setBook({
-            ...book,
-            [name]: parsed,
-        });
+    const handleClear = () => {
+        setBook(dataInitialState);
     }
 
-    
-
+    console.log(book)
     const handleSubmit = () => {
         const bookString = localStorage.getItem('engraving-book');
         const bookArray = bookString ? JSON.parse(bookString) : [];
@@ -40,31 +43,40 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     }
 
     const bookLevelOptions = Object.entries(bookLevels).map(([key, value]) => (
-        <option key={key} value={key}>{value}</option>
+        <SelectItem key={key} value={key}>{value}</SelectItem>
       ));
 
     return (
-        <FormControl>
-            <Input
-                label="Select engraving book"
-                name="name"
-                options={engravingOptions}
-                onChange={handleChange}
-                value={book.name}
-                required
-            />
-            <Input
-                label="Select level"
-                name="value"
-                options={bookLevelOptions}
-                onChange={handleChange}
-                value={book.value}
-                required
-            />
-            <Button colorScheme='' size='sm' variant="outline" onClick={handleSubmit}>
-                Add engraving book
-            </Button>
-        </FormControl>
+        <Card>
+            <CardHeader>
+                <CardTitle>Add engraving book</CardTitle>
+                <CardDescription>Add your engraving books from your characters.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Input
+                    label="Select engraving book"
+                    name="name"
+                    options={engravingOptions}
+                    onChange={(e: string, v: string) => handleChange(e, v)}
+                    value={book.name}
+                    required
+                />
+                <Input
+                    label="Select level"
+                    name="value"
+                    options={bookLevelOptions}
+                    onChange={(e: string, v: string) => handleChange(e, v)}
+                    value={book.value}
+                    required
+                />
+            </CardContent>
+            <CardFooter className="justify-between">
+                <Button variant="outline" onClick={handleClear}>Clear</Button>
+                <Button onClick={handleSubmit}>
+                    Add 
+                </Button>
+            </CardFooter>
+        </Card>
     )
 }
 

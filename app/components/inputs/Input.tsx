@@ -1,12 +1,21 @@
 'use client';
-import { Select } from '@chakra-ui/react'
+// import { Select } from '@chakra-ui/react'
 import { ChangeEvent } from 'react';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface InputProps {
     label: string;
-    name?: string;
+    name: string;
     options: any;
-    onChange: (e: any) => void;
+    onChange: (e: string, v: any) => void;
     required: boolean;
     value: any;
     disabled?: boolean;
@@ -25,14 +34,18 @@ const Input: React.FC<InputProps> = ({
 }) => {
     return (
         <Select 
-            placeholder={label} 
-            onChange={onChange} 
             name={name} 
-            isRequired={required}
-            isDisabled={disabled}
-            value={value ?? ''}
+            onValueChange={(v) => onChange(name, v)} 
+            disabled={disabled} 
+            required={required}
+            value={value}
         >
-            {options}
+            <SelectTrigger>
+                <SelectValue placeholder={label} />
+            </SelectTrigger>
+            <SelectContent>
+                {options}
+            </SelectContent>
         </Select>
     )
 }

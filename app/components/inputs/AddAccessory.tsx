@@ -1,11 +1,21 @@
 'use client';
 import { getAccessoryTypes, getCombatStats, getReduction } from '../../libs/getItemData';
 import SliderInput from "../SliderInput";
-import { Button, Flex, FormControl } from '@chakra-ui/react'
+import { Flex, FormControl } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useState } from "react";
 import Input from "./Input";
 import { engravingLevels } from '@/app/libs/getEngravingData';
 import { formatAccessory } from '@/app/utils/formatData';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { SelectItem } from '@/components/ui/select';
 
 interface AddAccessoryProps  {
     engravingOptions: {};
@@ -35,31 +45,33 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
 }) => {
   const dataInitialState = {
     uid: 0,
-    combatOne: null,
-    combatTwo: null,
-    combatOneValue: 0,
-    combatTwoValue: 0,
-    engravingOne: null,
-    engravingTwo: null,
-    engravingOneValue: 0,
-    engravingTwoValue: 0,
-    reduction: null,
-    reductionValue: 1,
-    quality: 0,
+    combatOne: '',
+    combatTwo: '',
+    combatOneValue: '',
+    combatTwoValue: '',
+    engravingOne: '',
+    engravingTwo: '',
+    engravingOneValue: '',
+    engravingTwoValue: '',
+    reduction: '',
+    reductionValue: '',
+    quality: '',
     type: '',
   }
   const [data, setData] = useState(dataInitialState);
   const [isLoading, setIsLoading] = useState(false);
 
 
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    const parsed = parseString(name, value);
-    setData({
-      ...data,
-      [name]: parsed,
-    });
-  }
+  // const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  //   const { name, value } = e.target;
+  //   const parsed = parseString(name, value);
+  //   setData({
+  //     ...data,
+  //     [name]: parsed,
+  //   });
+  // }
+  
+  const handleChange = (e: string, v: string) => setData({ ...data, [e]: v});
 
   const handleSliderChange = (value: any, name: string) => {
     const parsed = parseString(name, value);
@@ -100,25 +112,29 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     // Store the updated array back in local storage
     localStorage.setItem('accessories', JSON.stringify(existingArray));
     setItemData(existingArray);
-    setData(dataInitialState);
+    handleClear();
     setIsLoading(false);
   }
 
+  const handleClear = () => {
+    setData(dataInitialState);
+  }
+
   const types = Object.entries(getAccessoryTypes()).map(([key, value]) => (
-    <option key={key} value={key}>{value}</option>
+    <SelectItem key={key} value={key}>{value}</SelectItem>
   ));
 
   const stats = Object.entries(getCombatStats()).map(([key, value]) => (
-    <option key={key} value={key}>{value}</option>
+    <SelectItem key={key} value={key}>{value}</SelectItem>
   ));
 
   const reduction = Object.entries(getReduction()).map(([key, value]) => (
-    <option key={key} value={key}>{value}</option>
+    <SelectItem key={key} value={key}>{value}</SelectItem>
   ));
 
   const engravings = Object.entries(engravingLevels).map(([key, value]) => {
     return (
-        <option key={key} value={key}>{value}</option>
+      <SelectItem key={key} value={key}>{value}</SelectItem>
     )
   });
 
@@ -128,100 +144,109 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   else maxStat = 200;
 
   return (
-    <FormControl isRequired>
-      <Flex gap="4" flexDirection="column">
-        <Input
-          label="Select accessory type"
-          name="type"
-          options={types}
-          onChange={handleChange}
-          value={data.type}
-          required
-        />
-      </Flex>
-      <Input 
-        label="Select combat stat"
-        name="combatOne"
-        options={stats}
-        onChange={handleChange}
-        value={data.combatOne}
-        required
-      />
-      <SliderInput 
-        max={maxStat} 
-        name="combatOneValue"
-        value={data.combatOneValue}
-        onChange={handleSliderChange} 
-      />
-      {data.type === 'NECKLACE' && (
-        <>
+    <Card>
+      <CardHeader>
+        <CardTitle>Add accessory</CardTitle>
+        <CardDescription>Add your accessories from your characters.</CardDescription>
+      </CardHeader>
+      <CardContent>
+          <Flex gap="4" flexDirection="column">
+            <Input
+              label="Select accessory type"
+              name="type"
+              options={types}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.type}
+              required
+            />
+          </Flex>
           <Input 
             label="Select combat stat"
-            name="combatTwo"
+            name="combatOne"
             options={stats}
-            onChange={handleChange}
-            value={data.combatTwo}
+            onChange={(e: string, v: string) => handleChange(e, v)}
+            value={data.combatOne}
             required
           />
           <SliderInput 
             max={maxStat} 
-            name="combatTwoValue"
-            value={data.combatTwoValue}
+            name="combatOneValue"
+            value={data.combatOneValue}
             onChange={handleSliderChange} 
           />
-        </>
-      )}
-      <Input 
-        label="Select engraving"
-        name="engravingOne"
-        options={engravingOptions}
-        onChange={handleChange}
-        value={data.engravingOne}
-        required
-      />
-      <Input
-          label="Select level"
-          name="engravingOneValue"
-          options={engravings}
-          onChange={handleChange}
-          value={data.engravingOneValue}
-          required
-      />
-      <Input 
-        label="Select engraving"
-        name="engravingTwo"
-        options={engravingOptions}
-        onChange={handleChange}
-        value={data.engravingTwo}
-        required
-      />
-      <Input
-          label="Select level"
-          name="engravingTwoValue"
-          options={engravings}
-          onChange={handleChange}
-          value={data.engravingTwoValue}
-          required
-      />
-      <Input 
-        label="Select reduction"
-        name="reduction"
-        options={reduction}
-        onChange={handleChange}
-        value={data.reduction}
-        required
-      />
-      <SliderInput
-        min={1} 
-        max={3} 
-        name="reductionValue"
-        value={data.reductionValue}
-        onChange={handleSliderChange} 
-      />
-      <Button colorScheme='' size='sm' variant="outline" onClick={handleSubmit}>
-            Add accessory
-      </Button>
-    </FormControl>
+          {data.type === 'NECKLACE' && (
+            <>
+              <Input 
+                label="Select combat stat"
+                name="combatTwo"
+                options={stats}
+                onChange={(e: string, v: string) => handleChange(e, v)}
+                value={data.combatTwo}
+                required
+              />
+              <SliderInput 
+                max={maxStat} 
+                name="combatTwoValue"
+                value={data.combatTwoValue}
+                onChange={handleSliderChange} 
+              />
+            </>
+          )}
+          <Input 
+            label="Select engraving"
+            name="engravingOne"
+            options={engravingOptions}
+            onChange={(e: string, v: string) => handleChange(e, v)}
+            value={data.engravingOne}
+            required
+          />
+          <Input
+              label="Select level"
+              name="engravingOneValue"
+              options={engravings}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.engravingOneValue}
+              required
+          />
+          <Input 
+            label="Select engraving"
+            name="engravingTwo"
+            options={engravingOptions}
+            onChange={(e: string, v: string) => handleChange(e, v)}
+            value={data.engravingTwo}
+            required
+          />
+          <Input
+              label="Select level"
+              name="engravingTwoValue"
+              options={engravings}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.engravingTwoValue}
+              required
+          />
+          <Input 
+            label="Select reduction"
+            name="reduction"
+            options={reduction}
+            onChange={(e: string, v: string) => handleChange(e, v)}
+            value={data.reduction}
+            required
+          />
+          <SliderInput
+            min={1} 
+            max={3} 
+            name="reductionValue"
+            value={data.reductionValue}
+            onChange={handleSliderChange} 
+          />
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button variant="outline" onClick={handleClear}>Clear</Button>
+        <Button onClick={handleSubmit}>
+          Add
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }
 

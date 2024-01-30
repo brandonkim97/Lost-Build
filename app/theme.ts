@@ -2,9 +2,12 @@
 import { extendTheme, type ThemeConfig } from '@chakra-ui/react';
 
 const theme = extendTheme({
-  config: {
-    initialColorMode: 'dark',
-    useSystemColorMode: false,
+  styles: {
+    global: {
+      body: {
+        bg: '#09090B'
+      }
+    }
   },
   colors: {
     light: {
@@ -14,7 +17,7 @@ const theme = extendTheme({
     },
     dark: {
       // Define dark mode colors here
-      background: '#1a1a1a',
+      background: '#09090B',
       text: '#ffffff',
     },
   },
