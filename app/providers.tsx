@@ -8,7 +8,7 @@ export function Providers({
 }: { 
   children: React.ReactNode 
 }) {
-  return <ChakraProvider theme={theme}>
+  return <ChakraProvider theme={theme} toastOptions={{ defaultOptions: { position: 'bottom'} }}>
     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     {children}
   </ChakraProvider>

@@ -10,6 +10,8 @@ import Input from "./components/inputs/Input";
 import AddAccessory, { AddAccessoryData } from "./components/inputs/AddAccessory";
 import AddEngravingBook from "./components/inputs/AddEngravingBook";
 import AddAbilityStone from "./components/inputs/AddAbilityStone";
+import SelectEngraving from "./components/inputs/SelectEngraving";
+import { useToast } from "@chakra-ui/react";
 
 interface EngravingLevels {
   levels: { [key: string]: number };
@@ -29,6 +31,8 @@ export default function Home() {
   const [accessories, setAccessories] = useState([]);
   const [books, setBooks] = useState([]);
   const [stones, setStones] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     console.log('update all storages...');
@@ -51,24 +55,36 @@ export default function Home() {
     setStones(stoneArray);
   }, []);
   
-  const handleSubmit = useCallback(async () => {
-    try {
-      const query = new URLSearchParams({ 
-        data: JSON.stringify({
-          accessories: accessories,
-          engravingBooks: books,
-          abilityStones: stones,
-        }),
-        desiredEngravings: JSON.stringify(desiredEngravings),
-      }).toString();
-      const res = await fetch(`/api/builds?${query}`);
-      const fetchedData = await res.json();
-      setBuilds(fetchedData);
-      console.log('fetched data:', fetchedData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }, [accessories, books, stones, desiredEngravings]);  
+  const handleSubmit = useCallback(() => {
+    const getBuilds = new Promise<void>(async (resolve, reject) => {
+      try {
+        setIsLoading(true);
+        const query = new URLSearchParams({ 
+          data: JSON.stringify({
+            accessories: accessories,
+            engravingBooks: books,
+            abilityStones: stones,
+          }),
+          desiredEngravings: JSON.stringify(desiredEngravings),
+        }).toString();
+        const res = await fetch(`/api/builds?${query}`);
+        const fetchedData = await res.json();
+        setBuilds(fetchedData);
+        console.log('fetched data:', fetchedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        reject();
+      } finally {
+        setIsLoading(false);
+        resolve()
+      }
+    });
+    toast.promise(getBuilds, {
+      success: { title: 'Builds created!', description: 'Please check them out.', duration: 3000, isClosable: true },
+      error: { title: 'Oops, something went wrong!', description: 'Please try again later.', duration: 3000, isClosable: true },
+      loading: { title: 'Generating builds...', description: 'Please wait.' },
+    });
+  }, [accessories, books, stones, desiredEngravings, toast]);  
 
 
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -93,6 +109,17 @@ export default function Home() {
     ))
   }, []);
 
+  const desiredEngravingOutput = Object.entries(desiredEngravings).map(([key, value]) => (
+    <div key={key}>
+      <SelectEngraving 
+        options={engravingOptions}
+        name={key}
+        onChange={handleChange}
+        value={value}
+      />
+    </div>
+  ));
+
   return (
     <main className="flex min-h-screen flex-col p-24">
       <Flex gap="8" flexDirection="column">
@@ -107,54 +134,7 @@ export default function Home() {
         </Flex>
         <div className="mb-4 gap-4 flex flex-col">
           <Flex gap="4" flexDirection="column">
-            <Input 
-              label="Select engraving"
-              name="engravingOne"
-              options={engravingOptions}
-              onChange={handleChange}
-              value={desiredEngravings.engravingOne}
-              required
-            />
-            <Input 
-              label="Select engraving"
-              name="engravingTwo"
-              options={engravingOptions}
-              onChange={handleChange}
-              value={desiredEngravings.engravingTwo}
-              required
-            />
-            <Input 
-              label="Select engraving"
-              name="engravingThree"
-              options={engravingOptions}
-              onChange={handleChange}
-              value={desiredEngravings.engravingThree}
-              required
-            />
-            <Input 
-              label="Select engraving"
-              name="engravingFour"
-              options={engravingOptions}
-              onChange={handleChange}
-              value={desiredEngravings.engravingFour}
-              required
-            />
-            <Input 
-              label="Select engraving"
-              name="engravingFive"
-              options={engravingOptions}
-              onChange={handleChange}
-              value={desiredEngravings.engravingFive}
-              required
-            />
-            <Input 
-              label="Select engraving"
-              name="engravingSix"
-              options={engravingOptions}
-              onChange={handleChange}
-              value={desiredEngravings.engravingSix}
-              required
-            />
+            {desiredEngravingOutput}
           </Flex>
           <Button colorScheme='' size='sm' variant="outline" onClick={handleSubmit}>
             Generate

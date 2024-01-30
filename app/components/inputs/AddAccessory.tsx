@@ -44,7 +44,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     engravingOneValue: 0,
     engravingTwoValue: 0,
     reduction: null,
-    reductionValue: 0,
+    reductionValue: 1,
     quality: 0,
     type: '',
   }
