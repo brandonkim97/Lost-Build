@@ -8,6 +8,7 @@ import { formatStones } from "@/app/utils/formatData";
 
 interface AddAbilityStoneProps  {
     engravingOptions: {};
+    setItemData: (e: any) => void;
 }
 
 export interface AddAbilityStoneData {
@@ -21,6 +22,7 @@ export interface AddAbilityStoneData {
 
 const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     engravingOptions,
+    setItemData
 }) => {
     const dataInitialState = {
         engravingOne: '',
@@ -82,6 +84,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         const formattedStone = formatStones(stone)
         stoneArray.push(formattedStone);
         localStorage.setItem('ability-stones', JSON.stringify(stoneArray));
+        setItemData(stoneArray);
         setStone(dataInitialState);
     }
 

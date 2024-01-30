@@ -36,23 +36,17 @@ export default function Home() {
     const accessoryString = localStorage.getItem('accessories');
     const accessoryArray = accessoryString ? JSON.parse(accessoryString) : [];
 
-    if (accessoryArray.length === 0) return;
-
     setAccessories(accessoryArray);
 
     //get engraving books from local storage
     const bookString = localStorage.getItem('engraving-book');
     const bookArray = bookString ? JSON.parse(bookString) : [];
 
-    if (bookArray.length === 0) return;
-
     setBooks(bookArray);
 
     //get ability stones from local storage
     const stoneString = localStorage.getItem('ability-stones');
     const stoneArray = stoneString ? JSON.parse(stoneString) : [];
-
-    if (stoneArray.length === 0) return;
 
     setStones(stoneArray);
   }, []);
@@ -85,6 +79,8 @@ export default function Home() {
     })
   }
 
+  const setItemData = (e: any, func: (e: any) => void): void => { func(e) }
+
   const engravingOptions = useMemo(() => {
     return Object.entries(engravings).map(([key, value]) => (
       <option key={key} value={key}>{value}</option>
@@ -101,13 +97,13 @@ export default function Home() {
     <main className="flex min-h-screen flex-col p-24">
       <Flex gap="8" flexDirection="column">
         <Flex gap="4" flexDirection="column" className="my-6">
-          <AddAccessory engravingOptions={engravingOptions} />
+          <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
         </Flex>
         <Flex>
-          <AddEngravingBook engravingOptions={engravingOptions} />
+          <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
         </Flex>
         <Flex>
-          <AddAbilityStone engravingOptions={combatEngravingOptions} />
+          <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
         </Flex>
         <div className="mb-4 gap-4 flex flex-col">
           <Flex gap="4" flexDirection="column">

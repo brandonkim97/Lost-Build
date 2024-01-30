@@ -13,6 +13,7 @@ interface DesiredParams {
     engravingThree: string;
     engravingFour: string;
     engravingFive: string;
+    engravingSix: string;
 }
 
 interface Count {
@@ -26,7 +27,7 @@ interface EngravingLevels {
     build: Build;
 }
 
-export default async function generateBuild(data: DataParams, desiredEngravings: Required<DesiredParams>) {
+export default async function generateBuild(data: DataParams, desiredEngravings: DesiredParams) {
     const {
         accessories,
         engravingBooks,
@@ -46,6 +47,7 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name)
     });
+    // console.log(filteredAccessories)
     //generate all engraving book pairs
     let bookPairs = generateBookPairs(filteredBooks);
     // console.log(bookPairs)
@@ -145,12 +147,10 @@ function createBuild(acc: Accessory[], pair: Engraving[], stone: AbilityStone) {
                 break;
         }
     }
-    return {
-        ...build,
-        engravingBookOne: pair[0],
-        engravingBookTwo: pair[1],
-        abilityStone: stone,
-    } as Build;
+    build.engravingBookOne = pair[0];
+    build.engravingBookTwo = pair[1];
+    build.abilityStone = stone;
+    return build as Build;
 }
 
 function getEngravingLevels(builds: Build[]) {
@@ -162,19 +162,21 @@ function getEngravingLevels(builds: Build[]) {
             switch(key) {
                 case 'engravingBookOne':
                 case 'engravingBookTwo':
-                    (eng['levels'][build[key].name] as number) += build[key].value;
+                    eng['levels'][build[key].name] = build[key].name in eng['levels'] ? 
+                        eng['levels'][build[key].name] + build[key].value :
+                        build[key].value;
                     break;
                 default:
                     const bld = (build[key] as Accessory | AbilityStone | Necklace);
 
                     eng['levels'][bld.engravingOne.name] = 
                         bld.engravingOne.name in eng['levels'] ? 
-                        (eng['levels'][bld.engravingOne.name] as number) + bld.engravingOne.value : 
+                        eng['levels'][bld.engravingOne.name] + bld.engravingOne.value : 
                         bld.engravingOne.value;
 
                     eng['levels'][bld.engravingTwo.name] = 
                         bld.engravingTwo.name in eng['levels'] ? 
-                        (eng['levels'][bld.engravingTwo.name] as number) + bld.engravingTwo.value : 
+                        eng['levels'][bld.engravingTwo.name] + bld.engravingTwo.value : 
                         bld.engravingTwo.value;
 
                     break;

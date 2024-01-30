@@ -11,14 +11,19 @@ export async function GET(
   try {
     const data = request.nextUrl.searchParams.get('data');
     const desiredEngravings = request.nextUrl.searchParams.get('desiredEngravings');
+    
     // Perform some server-side processing using the received data
 
     if (!data || !data.length || !desiredEngravings || !desiredEngravings.length) {
       throw new Error('Data undefined');
     }
 
+    //filter out empty engravings
+    let filteredEngravings = JSON.parse(desiredEngravings);
+    filteredEngravings = Object.fromEntries(Object.entries(filteredEngravings).filter(([_, value]) => value != ""));
+
     // Send a modified JSON response back to the client
-    const res = await generateBuilds(JSON.parse(data), JSON.parse(desiredEngravings));
+    const res = await generateBuilds(JSON.parse(data), filteredEngravings);
     return NextResponse.json(res);
   } catch (error: any) {
     console.error('Error processing data:', error);

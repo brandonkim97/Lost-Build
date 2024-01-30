@@ -5,10 +5,12 @@ import { bookLevels } from "@/app/libs/getEngravingData";
 
 interface AddEngravingBookProps  {
     engravingOptions: {};
+    setItemData: (e: any) => void;
 }
 
 const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     engravingOptions,
+    setItemData,
 }) => {
     const dataInitialState = {
         name: '',
@@ -33,6 +35,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
         const bookArray = bookString ? JSON.parse(bookString) : [];
         bookArray.push(book);
         localStorage.setItem('engraving-book', JSON.stringify(bookArray));
+        setItemData(bookArray);
         setBook(dataInitialState);
     }
 

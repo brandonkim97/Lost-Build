@@ -9,6 +9,7 @@ import { formatAccessory } from '@/app/utils/formatData';
 
 interface AddAccessoryProps  {
     engravingOptions: {};
+    setItemData: (e: any) => void;
 }
 
 export interface AddAccessoryData {
@@ -29,7 +30,8 @@ export interface AddAccessoryData {
   
   
 const AddAccessory: React.FC<AddAccessoryProps> = ({
-  engravingOptions
+  engravingOptions,
+  setItemData
 }) => {
   const dataInitialState = {
     uid: 0,
@@ -97,6 +99,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
 
     // Store the updated array back in local storage
     localStorage.setItem('accessories', JSON.stringify(existingArray));
+    setItemData(existingArray);
     setData(dataInitialState);
     setIsLoading(false);
   }
