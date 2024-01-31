@@ -34,6 +34,7 @@ const SliderInput: React.FC<IParams> = ({
         <NumberInput 
             maxW='100px' 
             mr='2rem' 
+            min={min}
             max={max} 
             keepWithinRange={true} 
             value={value} 

@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SelectItem } from '@/components/ui/select';
+import ClearButton from '../buttons/ClearButton';
+import SubmitButton from '../buttons/SubmitButton';
 
 interface AddAccessoryProps  {
     engravingOptions: {};
@@ -139,9 +141,19 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   });
 
   let maxStat = 0;
-  if (data.type === 'NECKLACE') maxStat = 500;
-  else if (data.type === 'EARRING') maxStat = 300;
-  else maxStat = 200;
+  let minStat = 100;
+  if (data.type === 'NECKLACE') {
+    minStat = 400;
+    maxStat = 500;
+  }
+  else if (data.type === 'EARRING') {
+    minStat = 250;
+    maxStat = 300;
+  }
+  else {
+    minStat = 140;
+    maxStat = 200;
+  }
 
   return (
     <Card>
@@ -159,7 +171,6 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
               value={data.type}
               required
             />
-          </Flex>
           <Input 
             label="Select combat stat"
             name="combatOne"
@@ -170,6 +181,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
           />
           <SliderInput 
             max={maxStat} 
+            min={minStat}
             name="combatOneValue"
             value={data.combatOneValue}
             onChange={handleSliderChange} 
@@ -186,6 +198,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
               />
               <SliderInput 
                 max={maxStat} 
+                min={minStat}
                 name="combatTwoValue"
                 value={data.combatTwoValue}
                 onChange={handleSliderChange} 
@@ -239,13 +252,13 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
             value={data.reductionValue}
             onChange={handleSliderChange} 
           />
+        </Flex>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={handleClear}>Clear</Button>
-        <Button onClick={handleSubmit}>
-          Add
-        </Button>
+        <ClearButton label='Clear' onClick={handleClear} />
+        <SubmitButton label='Add' onClick={handleSubmit} />
       </CardFooter>
+      
     </Card>
   )
 }

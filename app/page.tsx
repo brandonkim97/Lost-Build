@@ -1,7 +1,7 @@
 'use client';
 import Image from "next/image";
 import axios from "axios";
-import { Button, Flex, FormControl } from '@chakra-ui/react'
+import { Box, Button, Flex, FormControl } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import getMockData from "./utils/getMockData";
 import { combatEngravings, engravings } from "./libs/getEngravingData";
@@ -20,14 +20,15 @@ interface EngravingLevels {
 }
 
 export default function Home() {
-  const [desiredEngravings, setDesiredEngravings] = useState({
+  const dataInitialState = {
     engravingOne: '',
     engravingTwo: '',
     engravingThree: '',
     engravingFour: '',
     engravingFive: '',
     engravingSix: '',
-  });
+  };
+  const [desiredEngravings, setDesiredEngravings] = useState(dataInitialState);
   const [builds, setBuilds] = useState<EngravingLevels[]>([]);
   const [accessories, setAccessories] = useState([]);
   const [books, setBooks] = useState([]);
@@ -36,7 +37,6 @@ export default function Home() {
   const toast = useToast();
 
   useEffect(() => {
-    console.log('update all storages...');
     //get accessories from local storage
     const accessoryString = localStorage.getItem('accessories');
     const accessoryArray = accessoryString ? JSON.parse(accessoryString) : [];
@@ -88,15 +88,20 @@ export default function Home() {
   }, [accessories, books, stones, desiredEngravings, toast]);  
 
 
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setDesiredEngravings({
-      ...desiredEngravings,
-      [name]: value,
-    })
-  }
+  // const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  //   const { name, value } = e.target;
+  //   setDesiredEngravings({
+  //     ...desiredEngravings,
+  //     [name]: value,
+  //   })
+  // }
 
-  const setItemData = (e: any, func: (e: any) => void): void => { func(e) }
+  const handleChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
+
+  const handleClear = () => setDesiredEngravings(dataInitialState);
+
+
+  const setItemData: Function = (e: any, func: (e: any) => void): void => { func(e) }
 
   const engravingOptions = useMemo(() => {
     return Object.entries(engravings).map(([key, value]) => (
@@ -106,49 +111,42 @@ export default function Home() {
 
   const combatEngravingOptions = useMemo(() => {
     return Object.entries(combatEngravings).map(([key, value]) => (
-      <option key={key} value={key}>{value}</option>
+      <SelectItem key={key} value={key}>{value}</SelectItem>
     ))
   }, []);
 
-  const desiredEngravingOutput = Object.entries(desiredEngravings).map(([key, value]) => (
-    <div key={key}>
-      <SelectEngraving 
-        options={engravingOptions}
-        name={key}
-        onChange={handleChange}
-        value={value}
-      />
-    </div>
-  ));
-
   return (
     <main className="flex min-h-screen flex-col p-24">
-      <Flex gap="8" flexDirection="column">
-        <Flex gap="4" flexDirection="column" className="my-6">
+      <Flex gap="6" flexDirection="row" flex={1} className="max-h-[800px]">
+        <Box gap="4" className="w-1/3">
           <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
+        </Box>
+        <Flex flexDirection="column" className="w-1/3" justify="space-between">
+          <Box gap="4">
+            <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
+          </Box>
+          <Box gap="4" className="mt-6">
+            <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
+          </Box>
         </Flex>
-        <Flex gap="4" flexDirection="column" className="my-6">
-          <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
-        </Flex>
-        <Flex>
-          <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
-        </Flex>
-        <div className="mb-4 gap-4 flex flex-col">
-          <Flex gap="4" flexDirection="column">
-            {desiredEngravingOutput}
+        <Flex gap="4" flexDirection="column" className="w-1/3">
+            <SelectEngraving 
+              engravingOptions={engravingOptions} 
+              desiredEngravings={desiredEngravings}
+              handleChange={(e: string, v: string) => handleChange(e, v)}
+              onClear={handleClear}
+              onSubmit={handleSubmit}
+            />
           </Flex>
-          <Button colorScheme='' size='sm' variant="outline" onClick={handleSubmit}>
-            Generate
-          </Button>
-        </div>
-        {builds?.length && (
+      </Flex>
+        {/* {builds?.length && (
           <Flex flexDirection="column" className="flex-wrap">
               {builds.map((value, index) => (
                 <Flex key={index} flexDirection="row" gap="4" className="py-6">
                     {Object.entries(value.levels).map(([key, value]) => (
                       <div key={key}>{value}</div>
                     ))}
-                    {/* <div>{value.build.necklace.engravingOne.name}</div>
+                    <div>{value.build.necklace.engravingOne.name}</div>
                     <div>{value.build.necklace.engravingOne.value}</div>
                     <div>{value.build.necklace.engravingTwo.name}</div>
                     <div>{value.build.necklace.engravingTwo.value}</div>
@@ -181,12 +179,11 @@ export default function Home() {
                     <div>{value.build.abilityStone.engravingOne.name}</div>
                     <div>{value.build.abilityStone.engravingOne.value}</div>
                     <div>{value.build.abilityStone.engravingTwo.name}</div>
-                    <div>{value.build.abilityStone.engravingTwo.value}</div> */}
+                    <div>{value.build.abilityStone.engravingTwo.value}</div>
                 </Flex>
               ))}
           </Flex>
-        )}
-      </Flex>
+        )} */}
     </main>
   );
 }
