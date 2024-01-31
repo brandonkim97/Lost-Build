@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { SelectItem } from '@/components/ui/select';
 import ClearButton from '../buttons/ClearButton';
 import SubmitButton from '../buttons/SubmitButton';
+import Modal from '../modals/Modal';
+import useAddAccessoryModal from '@/app/hooks/useAddAccessoryModal';
 
 interface AddAccessoryProps  {
     engravingOptions: {};
@@ -45,6 +47,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   engravingOptions,
   setItemData
 }) => {
+  const addAccessoryModal = useAddAccessoryModal();
   const dataInitialState = {
     uid: 0,
     combatOne: '',
@@ -62,16 +65,6 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   }
   const [data, setData] = useState(dataInitialState);
   const [isLoading, setIsLoading] = useState(false);
-
-
-  // const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-  //   const { name, value } = e.target;
-  //   const parsed = parseString(name, value);
-  //   setData({
-  //     ...data,
-  //     [name]: parsed,
-  //   });
-  // }
   
   const handleChange = (e: string, v: string) => setData({ ...data, [e]: v});
 
@@ -155,10 +148,9 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     maxStat = 200;
   }
 
-  return (
+  let bodyContent = (
     <Card>
       <CardHeader>
-        <CardTitle>Add accessory</CardTitle>
         <CardDescription>Add your accessories from your characters.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -254,12 +246,23 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
           />
         </Flex>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      {/* <CardFooter className="flex justify-between">
         <ClearButton label='Clear' onClick={handleClear} />
         <SubmitButton label='Add' onClick={handleSubmit} />
-      </CardFooter>
-      
+      </CardFooter> */}
     </Card>
+  );
+  return (
+    <Modal
+      isOpen={addAccessoryModal.isOpen}
+      onClose={addAccessoryModal.onClose}
+      onSubmit={handleSubmit}
+      actionLabel="Submit"
+      secondaryAction={handleClear}
+      secondaryActionLabel='Clear'
+      title="Add accessory"
+      body={bodyContent}
+    />
   )
 }
 

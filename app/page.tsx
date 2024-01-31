@@ -13,6 +13,11 @@ import AddAbilityStone from "./components/inputs/AddAbilityStone";
 import SelectEngraving from "./components/inputs/SelectEngraving";
 import { useToast } from "@chakra-ui/react";
 import { SelectItem } from "@/components/ui/select";
+import useAddAccessoryModal from "./hooks/useAddAccessoryModal";
+import ModalButton from "./components/buttons/ModalButton";
+import useAddEngravingBookModal from "./hooks/useAddEngravingBookModal";
+import useAddAbilityStoneModal from "./hooks/useAddAbilityStoneModal";
+import { Card } from "@/components/ui/card";
 
 interface EngravingLevels {
   levels: { [key: string]: number };
@@ -20,6 +25,9 @@ interface EngravingLevels {
 }
 
 export default function Home() {
+  const addAccessoryModal = useAddAccessoryModal();
+  const addEngravingBookModal = useAddEngravingBookModal();
+  const addAbilityStoneModal = useAddAbilityStoneModal();
   const dataInitialState = {
     engravingOne: '',
     engravingTwo: '',
@@ -87,18 +95,21 @@ export default function Home() {
     });
   }, [accessories, books, stones, desiredEngravings, toast]);  
 
-
-  // const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-  //   const { name, value } = e.target;
-  //   setDesiredEngravings({
-  //     ...desiredEngravings,
-  //     [name]: value,
-  //   })
-  // }
-
   const handleChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
 
   const handleClear = () => setDesiredEngravings(dataInitialState);
+
+  const onAddAccessory = useCallback(() => {
+    return addAccessoryModal.onOpen();
+  }, [addAccessoryModal]);
+
+  const onAddEngravingBook = useCallback(() => {
+    return addEngravingBookModal.onOpen();
+  }, [addEngravingBookModal]);
+
+  const onAddAbilityStone = useCallback(() => {
+    return addAbilityStoneModal.onOpen();
+  }, [addAbilityStoneModal]);
 
 
   const setItemData: Function = (e: any, func: (e: any) => void): void => { func(e) }
@@ -117,28 +128,38 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col p-24">
+      <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
+      <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
+      <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
       <Flex gap="6" flexDirection="row" flex={1} className="max-h-[800px]">
         <Box gap="4" className="w-1/3">
-          <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
+          <ModalButton onClick={onAddAccessory} label='Add Accessory' />
         </Box>
-        <Flex flexDirection="column" className="w-1/3" justify="space-between">
-          <Box gap="4">
-            <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
+        <Box gap="4" className="w-1/3">
+          <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
+        </Box>
+        <Box gap="4" className="w-1/3">
+          <ModalButton onClick={onAddAbilityStone} label='Add ability stone' />
+        </Box>
+      </Flex>
+      <Card>
+        <Flex flexDirection="row" className='w-full'>
+          <Box className='w-1/3'>
+            <Flex flexDirection='column'>
+              <SelectEngraving 
+                engravingOptions={engravingOptions} 
+                desiredEngravings={desiredEngravings}
+                handleChange={(e: string, v: string) => handleChange(e, v)}
+                onClear={handleClear}
+                onSubmit={handleSubmit}
+              />
+            </Flex>
           </Box>
-          <Box gap="4" className="mt-6">
-            <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
+          <Box className='w-2/3 p-6 border'>
+            test
           </Box>
         </Flex>
-        <Flex gap="4" flexDirection="column" className="w-1/3">
-            <SelectEngraving 
-              engravingOptions={engravingOptions} 
-              desiredEngravings={desiredEngravings}
-              handleChange={(e: string, v: string) => handleChange(e, v)}
-              onClear={handleClear}
-              onSubmit={handleSubmit}
-            />
-          </Flex>
-      </Flex>
+      </Card>
         {/* {builds?.length && (
           <Flex flexDirection="column" className="flex-wrap">
               {builds.map((value, index) => (

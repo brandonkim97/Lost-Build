@@ -12,6 +12,9 @@ import {
   } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Flex } from "@chakra-ui/react";
+import useAddEngravingBookModal from "@/app/hooks/useAddEngravingBookModal";
+import Modal from "../modals/Modal";
+
 interface AddEngravingBookProps  {
     engravingOptions: {};
     setItemData: (e: any) => void;
@@ -21,6 +24,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     engravingOptions,
     setItemData,
 }) => {
+    const addEngravingBookModal = useAddEngravingBookModal();
     const dataInitialState = {
         name: '',
         value: '',
@@ -44,9 +48,9 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
 
     const bookLevelOptions = Object.entries(bookLevels).map(([key, value]) => (
         <SelectItem key={key} value={key}>{value}</SelectItem>
-      ));
+    ));
 
-    return (
+    const bodyContent = (
         <Card>
             <CardHeader>
                 <CardTitle>Add engraving book</CardTitle>
@@ -72,13 +76,20 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
                     />
                 </Flex>
             </CardContent>
-            <CardFooter className="justify-between">
-                <Button variant="outline" onClick={handleClear}>Clear</Button>
-                <Button onClick={handleSubmit}>
-                    Add 
-                </Button>
-            </CardFooter>
         </Card>
+    )
+
+    return (
+        <Modal
+            isOpen={addEngravingBookModal.isOpen}
+            onClose={addEngravingBookModal.onClose}
+            onSubmit={handleSubmit}
+            actionLabel="Submit"
+            secondaryAction={handleClear}
+            secondaryActionLabel='Clear'
+            title="Add engraving book"
+            body={bodyContent}
+        />
     )
 }
 

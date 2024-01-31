@@ -7,17 +7,17 @@ interface IParams {
     disabled?: boolean;
 }
 
-const SubmitButton: React.FC<IParams> = ({
+const ModalButton: React.FC<IParams> = ({
     label,
     onClick,
     variant,
     disabled,
 }) => {
     return (
-        <Button onClick={onClick} variant={variant ?? 'default'} disabled={disabled}>
+        <Button onClick={onClick} variant={variant ?? 'secondary'} disabled={disabled}>
             {label}
         </Button>
     )
 }
     
-export default SubmitButton;
+export default ModalButton;

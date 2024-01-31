@@ -10,6 +10,8 @@ import ClearButton from "../buttons/ClearButton";
 import SubmitButton from "../buttons/SubmitButton";
 import { SelectItem } from "@/components/ui/select";
 import { Flex } from "@chakra-ui/react";
+import useAddAbilityStoneModal from "@/app/hooks/useAddAbilityStoneModal";
+import Modal from "../modals/Modal";
 
 interface AddAbilityStoneProps  {
     engravingOptions: {};
@@ -29,6 +31,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     engravingOptions,
     setItemData
 }) => {
+    const addAbilityStoneModal = useAddAbilityStoneModal();
     const dataInitialState = {
         engravingOne: '',
         engravingOneValue: null,
@@ -111,7 +114,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         )
     });
 
-    return (
+    const bodyContent = (
         <Card className="">
             <CardHeader>
                 <CardTitle>Add ability stone</CardTitle>
@@ -168,11 +171,20 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
                     />
                 </Flex>
             </CardContent>
-            <CardFooter className="justify-between mt-auto">
-                <ClearButton label='Clear' onClick={handleClear} />
-                <SubmitButton label='Add' onClick={handleSubmit} />
-            </CardFooter>
         </Card>
+    )
+
+    return (
+        <Modal
+            isOpen={addAbilityStoneModal.isOpen}
+            onClose={addAbilityStoneModal.onClose}
+            onSubmit={handleSubmit}
+            actionLabel="Submit"
+            secondaryAction={handleClear}
+            secondaryActionLabel='Clear'
+            title="Add ability stone"
+            body={bodyContent}
+        />
     )
 }
 
