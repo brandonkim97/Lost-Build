@@ -1,7 +1,7 @@
 'use client';
 import Image from "next/image";
 import axios from "axios";
-import { Box, Button, Flex, FormControl } from '@chakra-ui/react'
+import { Box, Button, Flex, FormControl, Text } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import getMockData from "./utils/getMockData";
 import { combatEngravings, engravings } from "./libs/getEngravingData";
@@ -18,9 +18,13 @@ import ModalButton from "./components/buttons/ModalButton";
 import useAddEngravingBookModal from "./hooks/useAddEngravingBookModal";
 import useAddAbilityStoneModal from "./hooks/useAddAbilityStoneModal";
 import { Card } from "@/components/ui/card";
+import EngravingLine from "./components/engraving/EngravingLine";
+import { ScrollArea } from "@/components/ui/scroll-area"
+import ItemList from "./components/items/ItemList";
+import { formatLevels } from "./utils/formatData";
 
 interface EngravingLevels {
-  levels: { [key: string]: number };
+  levels: { [key: string]: (string | number)[][] };
   build: Build;
 }
 
@@ -78,8 +82,9 @@ export default function Home() {
         }).toString();
         const res = await fetch(`/api/builds?${query}`);
         const fetchedData = await res.json();
-        setBuilds(fetchedData);
-        console.log('fetched data:', fetchedData);
+        const formattedData = await formatLevels(fetchedData)
+        setBuilds(formattedData);
+        console.log('fetched data:', formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
         reject();
@@ -127,7 +132,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col p-24">
+    <main className="flex min-h-screen w-[1500px] flex-col p-24">
       <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
       <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
       <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
@@ -143,20 +148,52 @@ export default function Home() {
         </Box>
       </Flex>
       <Card>
-        <Flex flexDirection="row" className='w-full'>
-          <Box className='w-1/3'>
-            <Flex flexDirection='column'>
-              <SelectEngraving 
-                engravingOptions={engravingOptions} 
-                desiredEngravings={desiredEngravings}
-                handleChange={(e: string, v: string) => handleChange(e, v)}
-                onClear={handleClear}
-                onSubmit={handleSubmit}
-              />
-            </Flex>
+        <Flex flexDirection="row" className=''>
+          <Box className='w-1/5'>
+            <SelectEngraving 
+              engravingOptions={engravingOptions} 
+              desiredEngravings={desiredEngravings}
+              handleChange={(e: string, v: string) => handleChange(e, v)}
+              onClear={handleClear}
+              onSubmit={handleSubmit}
+            />
           </Box>
-          <Box className='w-2/3 p-6 border'>
-            test
+          <Box className='w-4/5'>
+            <Flex>
+              <Box className='w-3/4'>
+                <ScrollArea className="h-[600px]">
+                  {/* <EngravingLine />
+                  <EngravingLine />
+                  <EngravingLine />
+                  <EngravingLine />
+                  <EngravingLine />
+                  <EngravingLine /> */}
+                  {builds.length && builds[0].levels.three.map((item, index) => (
+                    <Box key={index}>
+                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                    </Box>
+                  ))}
+                  {builds.length && builds[0].levels.two.map((item, index) => (
+                    <Box key={index}>
+                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                    </Box>
+                  ))}
+                  {builds.length && builds[0].levels.one.map((item, index) => (
+                    <Box key={index}>
+                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                    </Box>
+                  ))}
+                  {builds.length && builds[0].levels.zero.map((item, index) => (
+                    <Box key={index}>
+                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                    </Box>
+                  ))}
+                </ScrollArea>
+              </Box>
+              <Flex flexDirection='column' className="w-1/4 px-4 pt-20 pb-6 text-center">
+                <ItemList />
+              </Flex>
+            </Flex>
           </Box>
         </Flex>
       </Card>

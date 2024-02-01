@@ -71,3 +71,24 @@ export function formatStones(stone: any) {
     }
   }
 }
+
+export function formatLevels(data: any) {
+  for (let i = 0; i < data.length; i++) {
+    const res: { [key: string]: (string | number)[][] } = { three: [], two: [], one: [], zero: [] };
+    for (const key in data[i].levels) {
+      const value = data[i].levels[key];
+      if (value >= 15) {
+        res.three.push([key, value]);
+      } else if (value >= 10) {
+        res.two.push([key, value]);
+      } else if (value >= 5) {
+        res.one.push([key, value]);
+      } else {
+        res.zero.push([key, value]);
+      }
+    }
+    data[i].levels = res;
+  }
+
+  return data;
+}
