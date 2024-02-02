@@ -48,7 +48,7 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name)
     });
-    // console.log(filteredAccessories)
+    console.log(engravingBooks)
     //generate all engraving book pairs
     let bookPairs = generateBookPairs(filteredBooks);
     // console.log(bookPairs)

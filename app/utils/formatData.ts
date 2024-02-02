@@ -13,11 +13,11 @@ export function formatAccessory(acc: any) {
         },
         engravingOne: {
           name: acc.engravingOne,
-          value: acc.engravingOneValue
+          value: parseInt(acc.engravingOneValue, 10),
         },
         engravingTwo: {
           name: acc.engravingTwo,
-          value: acc.engravingTwoValue
+          value: parseInt(acc.engravingTwoValue, 10),
         },
         reduction: {
           name: acc.reduction,
@@ -40,11 +40,11 @@ export function formatAccessory(acc: any) {
     },
     engravingOne: {
       name: acc.engravingOne,
-      value: acc.engravingOneValue
+      value: parseInt(acc.engravingOneValue, 10),
     },
     engravingTwo: {
       name: acc.engravingTwo,
-      value: acc.engravingTwoValue
+      value: parseInt(acc.engravingTwoValue, 10),
     },
     reduction: {
       name: acc.reduction,
@@ -59,16 +59,23 @@ export function formatStones(stone: any) {
   return {
     engravingOne: {
       name: stone.engravingOne,
-      value: stone.engravingOneValue
+      value: parseInt(stone.engravingOneValue, 10)
     },
     engravingTwo: {
       name: stone.engravingTwo,
-      value: stone.engravingTwoValue
+      value: parseInt(stone.engravingTwoValue, 10)
     },
     reduction: {
       name: stone.reduction,
       value: stone.reductionValue
     }
+  }
+}
+
+export function formatBook(book: any) {
+  return {
+    name: book.name,
+    value: parseInt(book.value, 10),
   }
 }
 

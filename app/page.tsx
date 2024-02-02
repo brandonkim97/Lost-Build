@@ -79,15 +79,28 @@ export default function Home() {
     const getBuilds = new Promise<void>(async (resolve, reject) => {
       try {
         setIsLoading(true);
-        const query = new URLSearchParams({ 
-          data: JSON.stringify({
+        // const query = new URLSearchParams({ 
+        //   data: JSON.stringify({
+        //     accessories: accessories,
+        //     engravingBooks: books,
+        //     abilityStones: stones,
+        //   }),
+        //   desiredEngravings: JSON.stringify(desiredEngravings),
+        // }).toString();
+        // const res = await fetch(`/api/builds?${query}`);
+        const res = await fetch('/api/builds/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             accessories: accessories,
             engravingBooks: books,
             abilityStones: stones,
-          }),
-          desiredEngravings: JSON.stringify(desiredEngravings),
-        }).toString();
-        const res = await fetch(`/api/builds?${query}`);
+            desiredEngravings: desiredEngravings,
+            combatStats: desiredStats,
+          })
+        })
         const fetchedData = await res.json();
         const formattedData = await formatLevels(fetchedData)
         setShowNoBuilds(formattedData.length === 0);

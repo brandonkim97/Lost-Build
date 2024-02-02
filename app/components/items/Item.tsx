@@ -22,7 +22,7 @@ const Item: React.FC<IParams> = ({
             image = '/images/ring2_icon.webp';
             break;
         case 'STONE':
-            image = '/images/ability_stone_icon.webp';
+            image = '/images/ability_stone_icon.jpg';
             break;
     }
 

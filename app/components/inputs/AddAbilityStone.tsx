@@ -34,9 +34,9 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     const addAbilityStoneModal = useAddAbilityStoneModal();
     const dataInitialState = {
         engravingOne: '',
-        engravingOneValue: null,
+        engravingOneValue: '',
         engravingTwo: '',
-        engravingTwoValue: null,
+        engravingTwoValue: '',
         reduction: '',
         reductionValue: 0,
     }

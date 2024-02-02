@@ -1,29 +1,31 @@
 import generateBuilds from '@/app/utils/generateBuilds';
 import { NextRequest, NextResponse } from 'next/server';
+import { jsonParser } from '../../middleware/parseBody';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 interface IParams {
   data: any;
 }
 
-export async function GET(
-    request: NextRequest
+export async function POST(
+    req: Request,
 ) {
   try {
-    const data = request.nextUrl.searchParams.get('data');
-    const desiredEngravings = request.nextUrl.searchParams.get('desiredEngravings');
+    // const data = req.nextUrl.searchParams.get('data');
+    // const desiredEngravings = req.nextUrl.searchParams.get('desiredEngravings');
+    const data = await req.json();
     
     // Perform some server-side processing using the received data
 
-    if (!data || !data.length || !desiredEngravings || !desiredEngravings.length) {
-      throw new Error('Data undefined');
-    }
+    // if (!data || !data.length || !data.desiredEngravings || !data.desiredEngravings.length) {
+    //   throw new Error('Data undefined');
+    // }
 
     //filter out empty engravings
-    let filteredEngravings = JSON.parse(desiredEngravings);
+    let filteredEngravings = data.desiredEngravings;
     filteredEngravings = Object.fromEntries(Object.entries(filteredEngravings).filter(([_, value]) => value != ""));
-
     // Send a modified JSON response back to the client
-    const res = await generateBuilds(JSON.parse(data), filteredEngravings);
+    const res = await generateBuilds(data, filteredEngravings);
     return NextResponse.json(res);
   } catch (error: any) {
     console.error('Error processing data:', error);

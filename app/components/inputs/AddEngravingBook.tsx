@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Flex } from "@chakra-ui/react";
 import useAddEngravingBookModal from "@/app/hooks/useAddEngravingBookModal";
 import Modal from "../modals/Modal";
+import { formatBook } from "@/app/utils/formatData";
 
 interface AddEngravingBookProps  {
     engravingOptions: {};
@@ -31,7 +32,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     }
     const [book, setBook] = useState(dataInitialState)
 
-    const handleChange = (e: string, v: string) => setBook({ ...book, [e]: v === 'value' ? parseInt(v, 10): v });
+    const handleChange = (e: string, v: string) => setBook({ ...book, [e]: v });
 
     const handleClear = () => {
         setBook(dataInitialState);
@@ -40,7 +41,8 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     const handleSubmit = () => {
         const bookString = localStorage.getItem('engraving-book');
         const bookArray = bookString ? JSON.parse(bookString) : [];
-        bookArray.push(book);
+        const formattedArray = formatBook(book);
+        bookArray.push(formattedArray);
         localStorage.setItem('engraving-book', JSON.stringify(bookArray));
         setItemData(bookArray);
         setBook(dataInitialState);
