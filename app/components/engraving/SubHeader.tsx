@@ -10,7 +10,7 @@ const SubHeader: React.FC<IParams> = ({
 }) => {
   return (
     <>
-        <Text color='gray' className='font-semibold'>{label}</Text>
+        <Text color='gray' fontSize='sm' className='font-semibold mb-1'>{label}</Text>
         <Box className='py-[.75px] rounded bg-yellow-600 mb-3' />
     </>
   )

@@ -1,3 +1,4 @@
+import { isReduction } from "../libs/getItemData";
 import { AbilityStone, Accessory, Build, Engraving, Necklace } from "../types";
 require('dotenv').config();
 
@@ -178,6 +179,10 @@ function getEngravingLevels(builds: Build[]) {
                         bld.engravingTwo.name in eng['levels'] ? 
                         eng['levels'][bld.engravingTwo.name] + bld.engravingTwo.value : 
                         bld.engravingTwo.value;
+                    eng['levels'][bld.reduction.name] =
+                        bld.reduction.name in eng['levels'] ? 
+                        eng['levels'][bld.reduction.name] + bld.reduction.value :
+                        bld.reduction.value;
 
                     break;
             }
@@ -197,6 +202,7 @@ function getTopThreeBuilds(levels: EngravingLevels[]) {
     for (const data of levels) {
         let level1 = 0, level2 = 0, level3 = 0;
         for (const key in data.levels) {
+            if (isReduction(key)) continue;
             if ((data['levels'][key] as number) >= 15) level3 += 15;
             else if ((data['levels'][key] as number) >= 10) level2 += 10;
             else if ((data['levels'][key] as number) >= 5) level1 += 5;

@@ -1,7 +1,5 @@
 'use client';
-import Image from "next/image";
-import axios from "axios";
-import { Box, Button, Flex, FormControl, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, FormControl, Text, Image } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import getMockData from "./utils/getMockData";
 import { combatEngravings, engravings } from "./libs/getEngravingData";
@@ -10,7 +8,7 @@ import Input from "./components/inputs/Input";
 import AddAccessory, { AddAccessoryData } from "./components/inputs/AddAccessory";
 import AddEngravingBook from "./components/inputs/AddEngravingBook";
 import AddAbilityStone from "./components/inputs/AddAbilityStone";
-import SelectEngraving from "./components/inputs/SelectEngraving";
+import SelectEngraving from "./components/inputs/SelectBuild";
 import { useToast } from "@chakra-ui/react";
 import { SelectItem } from "@/components/ui/select";
 import useAddAccessoryModal from "./hooks/useAddAccessoryModal";
@@ -22,6 +20,9 @@ import EngravingLine from "./components/engraving/EngravingLine";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import ItemList from "./components/items/ItemList";
 import { formatLevels } from "./utils/formatData";
+import EngravingContext from "./contexts/EngravingContext";
+import SelectBuild from './components/inputs/SelectBuild';
+import { getCombatStats } from './libs/getItemData';
 
 interface EngravingLevels {
   levels: { [key: string]: (string | number)[][] };
@@ -40,11 +41,17 @@ export default function Home() {
     engravingFive: '',
     engravingSix: '',
   };
+  const statsInitialState = {
+    combatOne: '',
+    combatTwo: '',
+  }
   const [desiredEngravings, setDesiredEngravings] = useState(dataInitialState);
+  const [desiredStats, setDesiredStats] = useState(statsInitialState)
   const [builds, setBuilds] = useState<EngravingLevels[]>([]);
   const [accessories, setAccessories] = useState([]);
   const [books, setBooks] = useState([]);
   const [stones, setStones] = useState([]);
+  const [showNoBuilds, setShowNoBuilds] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
@@ -83,6 +90,7 @@ export default function Home() {
         const res = await fetch(`/api/builds?${query}`);
         const fetchedData = await res.json();
         const formattedData = await formatLevels(fetchedData)
+        setShowNoBuilds(formattedData.length === 0);
         setBuilds(formattedData);
         console.log('fetched data:', formattedData);
       } catch (error) {
@@ -100,9 +108,13 @@ export default function Home() {
     });
   }, [accessories, books, stones, desiredEngravings, toast]);  
 
-  const handleChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
+  const handleEngravingChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
+  const handleStatChange = (e: string, v: string) => setDesiredStats({ ...desiredStats, [e]: v});
 
-  const handleClear = () => setDesiredEngravings(dataInitialState);
+  const handleClear = () => {
+    setDesiredEngravings(dataInitialState);
+    setDesiredStats(statsInitialState);
+  }
 
   const onAddAccessory = useCallback(() => {
     return addAccessoryModal.onOpen();
@@ -131,117 +143,93 @@ export default function Home() {
     ))
   }, []);
 
+  const combatStatOptions = useMemo(() => {
+    return Object.entries(getCombatStats()).map(([key, value]) => (
+      <SelectItem key={key} value={key}>{value}</SelectItem>
+    ))
+  }, []);
+
   return (
-    <main className="flex min-h-screen w-[1500px] flex-col p-24">
-      <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
-      <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
-      <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
-      <Flex gap="6" flexDirection="row" flex={1} className="max-h-[800px]">
-        <Box gap="4" className="w-1/3">
-          <ModalButton onClick={onAddAccessory} label='Add Accessory' />
-        </Box>
-        <Box gap="4" className="w-1/3">
-          <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
-        </Box>
-        <Box gap="4" className="w-1/3">
-          <ModalButton onClick={onAddAbilityStone} label='Add ability stone' />
-        </Box>
-      </Flex>
-      <Card>
-        <Flex flexDirection="row" className=''>
-          <Box className='w-1/5'>
-            <SelectEngraving 
-              engravingOptions={engravingOptions} 
-              desiredEngravings={desiredEngravings}
-              handleChange={(e: string, v: string) => handleChange(e, v)}
-              onClear={handleClear}
-              onSubmit={handleSubmit}
-            />
+    <EngravingContext.Provider value={engravings}>
+      <main className="flex min-h-screen w-[1500px] flex-col py-24">
+        <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
+        <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
+        <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
+        <Flex gap="6" flexDirection="row" flex={1} className="max-h-[200px]">
+          <Box gap="4" className="w-1/3">
+            <ModalButton onClick={onAddAccessory} label='Add Accessory' />
           </Box>
-          <Box className='w-4/5'>
-            <Flex>
-              <Box className='w-3/4'>
-                <ScrollArea className="h-[600px]">
-                  {/* <EngravingLine />
-                  <EngravingLine />
-                  <EngravingLine />
-                  <EngravingLine />
-                  <EngravingLine />
-                  <EngravingLine /> */}
-                  {builds.length && builds[0].levels.three.map((item, index) => (
-                    <Box key={index}>
-                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                    </Box>
-                  ))}
-                  {builds.length && builds[0].levels.two.map((item, index) => (
-                    <Box key={index}>
-                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                    </Box>
-                  ))}
-                  {builds.length && builds[0].levels.one.map((item, index) => (
-                    <Box key={index}>
-                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                    </Box>
-                  ))}
-                  {builds.length && builds[0].levels.zero.map((item, index) => (
-                    <Box key={index}>
-                      <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                    </Box>
-                  ))}
-                </ScrollArea>
-              </Box>
-              <Flex flexDirection='column' className="w-1/4 px-4 pt-20 pb-6 text-center">
-                <ItemList />
-              </Flex>
-            </Flex>
+          <Box gap="4" className="w-1/3">
+            <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
+          </Box>
+          <Box gap="4" className="w-1/3">
+            <ModalButton onClick={onAddAbilityStone} label='Add ability stone' />
           </Box>
         </Flex>
-      </Card>
-        {/* {builds?.length && (
-          <Flex flexDirection="column" className="flex-wrap">
-              {builds.map((value, index) => (
-                <Flex key={index} flexDirection="row" gap="4" className="py-6">
-                    {Object.entries(value.levels).map(([key, value]) => (
-                      <div key={key}>{value}</div>
-                    ))}
-                    <div>{value.build.necklace.engravingOne.name}</div>
-                    <div>{value.build.necklace.engravingOne.value}</div>
-                    <div>{value.build.necklace.engravingTwo.name}</div>
-                    <div>{value.build.necklace.engravingTwo.value}</div>
-
-                    <div>{value.build.earringOne.engravingOne.name}</div>
-                    <div>{value.build.earringOne.engravingOne.value}</div>
-                    <div>{value.build.earringOne.engravingTwo.name}</div>
-                    <div>{value.build.earringOne.engravingTwo.value}</div>
-
-                    <div>{value.build.earringTwo.engravingOne.name}</div>
-                    <div>{value.build.earringTwo.engravingOne.value}</div>
-                    <div>{value.build.earringTwo.engravingTwo.name}</div>
-                    <div>{value.build.earringTwo.engravingTwo.value}</div>
-
-                    <div>{value.build.ringOne.engravingOne.name}</div>
-                    <div>{value.build.ringOne.engravingOne.value}</div>
-                    <div>{value.build.ringOne.engravingTwo.name}</div>
-                    <div>{value.build.ringOne.engravingTwo.value}</div>
-
-                    <div>{value.build.ringTwo.engravingOne.name}</div>
-                    <div>{value.build.ringTwo.engravingOne.value}</div>
-                    <div>{value.build.ringTwo.engravingTwo.name}</div>
-                    <div>{value.build.ringTwo.engravingTwo.value}</div>
-
-                    <div>{value.build.engravingBookOne.name}</div>
-                    <div>{value.build.engravingBookOne.value}</div>
-                    <div>{value.build.engravingBookTwo.name}</div>
-                    <div>{value.build.engravingBookTwo.value}</div>
-
-                    <div>{value.build.abilityStone.engravingOne.name}</div>
-                    <div>{value.build.abilityStone.engravingOne.value}</div>
-                    <div>{value.build.abilityStone.engravingTwo.name}</div>
-                    <div>{value.build.abilityStone.engravingTwo.value}</div>
+        <Card>
+          <Flex flexDirection="row" className=''>
+            <Box className='w-1/5'>
+              <SelectBuild 
+                engravingOptions={engravingOptions} 
+                combatOptions={combatStatOptions}
+                desiredEngravings={desiredEngravings}
+                desiredStats={desiredStats}
+                handleEngravingChange={(e: string, v: string) => handleEngravingChange(e, v)}
+                handleStatChange={(e: string, v: string) => handleStatChange(e, v)}
+                onClear={handleClear}
+                onSubmit={handleSubmit}
+              />
+            </Box>
+            <Box className='w-4/5'>
+              {builds.length > 0 && (
+                <Flex>
+                  <Box className='w-3/4'>
+                    <ScrollArea className="h-[600px] pr-4">
+                      {builds.length && builds[0].levels.three.map((item, index) => (
+                        <Box key={index}>
+                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                        </Box>
+                      ))}
+                      {builds.length && builds[0].levels.two.map((item, index) => (
+                        <Box key={index}>
+                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                        </Box>
+                      ))}
+                      {builds.length && builds[0].levels.one.map((item, index) => (
+                        <Box key={index}>
+                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                        </Box>
+                      ))}
+                      {builds.length && builds[0].levels.zero.map((item, index) => (
+                        <Box key={index}>
+                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
+                        </Box>
+                      ))}
+                    </ScrollArea>
+                  </Box>
+                  <Flex flexDirection='column' className="w-1/4 px-4 py-6 text-center">
+                    <ItemList build={builds[0].build} />
+                  </Flex>
                 </Flex>
-              ))}
+                )}
+                {!builds.length && showNoBuilds && (
+                  <Flex className='h-full w-full justify-center items-center px-20' gap={20}>
+                    <Box className='w-1/3'>
+                      <Text fontSize='xl'>
+                        <Text fontSize='4xl'>
+                          Oops,
+                        </Text>No builds could be generated. Try adding some more accessories!
+                      </Text>
+                    </Box>
+                    <Box className='w-2/3'>
+                      <Image src='/images/mokoko_fire.png' alt='No builds available' boxSize='300px' />
+                    </Box>
+                  </Flex>
+                )}
+            </Box>
           </Flex>
-        )} */}
-    </main>
+        </Card>
+      </main>
+    </EngravingContext.Provider>
   );
 }

@@ -16,9 +16,21 @@ const EngravingLevels: React.FC<IParams> = ({
     return (
         <Box fontSize='xs'>
             <Flex className='justify-between text-center' gap='1'>
-                <EngravingLevel level={1} nodes={levelOneNodes} />
-                <EngravingLevel level={2} nodes={levelTwoNodes} />
-                <EngravingLevel level={3} nodes={levelThreeNodes} />
+                <EngravingLevel 
+                    level={1} 
+                    nodes={levelOneNodes} 
+                    isEnd={value < 10 && value >= 5} 
+                />
+                <EngravingLevel 
+                    level={2} 
+                    nodes={levelTwoNodes} 
+                    isEnd={value < 15 && value >= 10} 
+                />
+                <EngravingLevel 
+                    level={3} 
+                    nodes={levelThreeNodes} 
+                    isEnd={value >= 15} 
+                />
             </Flex>
         </Box>
     )

@@ -1,6 +1,13 @@
 import { Box, Image } from "@chakra-ui/react";
+import React from "react";
 
-const EngravingIcon = () => {
+interface IParams {
+    engraving: string;
+}
+
+const EngravingIcon: React.FC<IParams> = ({
+    engraving,
+}) => {
     return (
         <Box position='relative' className='scale-90'>
             <Box position='relative'>
@@ -13,7 +20,7 @@ const EngravingIcon = () => {
                 />
             </Box>
             <Box position='absolute' top='50%' left='50%'  transform="translate(-50%, -50%)">
-                <Image src='/images/adrenaline.webp' alt='Engraving Icon' className="rounded-full scale-125" />
+                <Image src={`/images/engravings/${engraving}.webp`} alt='Engraving Icon' className="rounded-full scale-125" />
             </Box>
         </Box>
     )

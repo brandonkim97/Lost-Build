@@ -11,7 +11,8 @@ const EngravingBonus: React.FC<IParams> = ({
     value,
 }) => {
     if (value <= 15) return '';
-    const label = `+${Math.floor(value % 5)}`;
+    const label = `+${value - 15}`;
+    
     return (
         <Box>
             <Flex className="items-center" gap='2'>

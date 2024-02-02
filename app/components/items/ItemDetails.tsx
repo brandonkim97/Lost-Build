@@ -28,7 +28,7 @@ const ItemDetails: React.FC<IParams> = ({
 
     return (
         <Flex className='items-center text-start'>
-            <Text color={engravingColor} fontSize='sm' className='w-4/5 justify-start'>{label}</Text>
+            <Text color={engravingColor} fontSize='sm' className='w-4/5 justify-start whitespace-nowrap'>{label}</Text>
             <Flex gap={1} className='items-center justify-start w-1/5'>
                 <Image src={imageSrc} alt={alt} className='scale-[.65]' />
                 <Text fontSize='sm'>{val}</Text>
