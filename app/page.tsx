@@ -119,7 +119,7 @@ export default function Home() {
       error: { title: 'Oops, something went wrong!', description: 'Please try again later.', duration: 3000, isClosable: true },
       loading: { title: 'Generating builds...', description: 'Please wait.' },
     });
-  }, [accessories, books, stones, desiredEngravings, toast]);  
+  }, [accessories, books, stones, desiredEngravings, toast, desiredStats]);  
 
   const handleEngravingChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
   const handleStatChange = (e: string, v: string) => setDesiredStats({ ...desiredStats, [e]: v});
