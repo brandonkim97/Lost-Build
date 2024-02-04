@@ -7,3 +7,4 @@
 - Ability to categorize accessories per character
 - Show what is missing based off the desired build/inputted accessories
 - Ability to choose which engraving to prioritize at level 3
+- Ability to prioritize accessories to force the generator to use it in the final build

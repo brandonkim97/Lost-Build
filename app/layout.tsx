@@ -4,7 +4,7 @@ import { ThemeProvider } from "./providers";
 import "./globals.css";
 import { cn } from "@/lib/utils"
  
-const fontSans = FontSans({
+export const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(
-          "flex justify-center min-h-screen bg-background font-sans antialiased",
+          "flex justify-center min-h-screen bg-background font-sans antialiased p-8",
           fontSans.variable
       )}>
         <ThemeProvider

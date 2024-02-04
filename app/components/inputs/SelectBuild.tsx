@@ -6,66 +6,50 @@ import SubmitButton from '../buttons/SubmitButton';
 import { Flex } from '@chakra-ui/react';
 
 interface IParams {
-    engravingOptions: any;
-    combatOptions: any;
-    desiredEngravings: {};
-    desiredStats: {};
-    handleEngravingChange: (e: string, v: string) => void;
-    handleStatChange: (e: string, v: string) => void;
+    label: string;
+    description: string;
+    inputLabel: string;
+    options: any;
+    selected: {};
+    handleChange: (e: string, v: string) => void;
     onClear: () => void;
-    onSubmit: () => void;
 }
 
 const SelectBuild: React.FC<IParams> = ({
-    engravingOptions,
-    combatOptions,
-    desiredEngravings,
-    desiredStats,
-    handleEngravingChange,
-    handleStatChange,
+    label,
+    description,
+    inputLabel,
+    options,
+    selected,
+    handleChange,
     onClear,
-    onSubmit,
 }) => {
 
-    const desiredEngravingOutput = Object.entries(desiredEngravings).map(([key, value]) => (
+    const output = Object.entries(selected).map(([key, value]) => (
           <Input
-            label="Select engraving"
+            label={inputLabel}
             key={key}
             name={key}
-            options={engravingOptions}
-            onChange={(e: string, v: string) => handleEngravingChange(e, v)}
-            value={value}
-            required
-        />
-    ));
-
-    const desiredStatOutput = Object.entries(desiredStats).map(([key, value]) => (
-          <Input
-            label="Select combat stat"
-            key={key}
-            name={key}
-            options={combatOptions}
-            onChange={(e: string, v: string) => handleStatChange(e, v)}
+            options={options}
+            onChange={(e: string, v: string) => handleChange(e, v)}
             value={value}
             required
         />
     ));
 
     return (
-        <Card className="h-full">
+        <Card className="h-full flex flex-col">
             <CardHeader>
-                <CardTitle>Choose engravings</CardTitle>
-                <CardDescription>Select the engravings/combat stats for your final build.</CardDescription>
+                <CardTitle>{label}</CardTitle>
+                <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent>
-                <Flex flexDirection="column" gap="4">
-                    {desiredEngravingOutput}
-                    {desiredStatOutput}
+                <Flex flexDirection='column' gap={4}>
+                    {output}
                 </Flex>
             </CardContent>
-            <CardFooter className='justify-between'>
+            <CardFooter className='grow top-0 content-end flex-wrap justify-end'>
                 <ClearButton label='Clear' onClick={onClear} />
-                <SubmitButton label='Generate' onClick={onSubmit} variant='destructive' />
             </CardFooter>
         </Card>
     )

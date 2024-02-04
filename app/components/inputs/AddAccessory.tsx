@@ -2,7 +2,7 @@
 import { getAccessoryTypes, getCombatStats, getReduction } from '../../libs/getItemData';
 import SliderInput from "../SliderInput";
 import { Flex, FormControl } from '@chakra-ui/react'
-import { ChangeEvent, useCallback, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Input from "./Input";
 import { engravingLevels } from '@/app/libs/getEngravingData';
 import { formatAccessory } from '@/app/utils/formatData';
@@ -48,23 +48,47 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   setItemData
 }) => {
   const addAccessoryModal = useAddAccessoryModal();
-  const dataInitialState = {
-    uid: 0,
-    combatOne: '',
-    combatTwo: '',
-    combatOneValue: '',
-    combatTwoValue: '',
-    engravingOne: '',
-    engravingTwo: '',
-    engravingOneValue: '',
-    engravingTwoValue: '',
-    reduction: '',
-    reductionValue: '',
-    quality: '',
-    type: '',
-  }
+  const { isEdit, item, index } = addAccessoryModal;
+  const dataInitialState = useMemo(() => {
+    return !isEdit && {
+      uid: 0,
+      combatOne: '',
+      combatTwo: '',
+      combatOneValue: '',
+      combatTwoValue: '',
+      engravingOne: '',
+      engravingTwo: '',
+      engravingOneValue: '',
+      engravingTwoValue: '',
+      reduction: '',
+      reductionValue: '',
+      quality: '',
+      type: '',
+    } 
+      ||
+    {
+      uid: item?.uid,
+      combatOne: item?.combatOne.name,
+      combatTwo: item?.combatTwo?.name,
+      combatOneValue: item?.combatOne.value,
+      combatTwoValue: item?.combatTwo?.value,
+      engravingOne: item?.engravingOne.name,
+      engravingTwo: item?.engravingTwo.name,
+      engravingOneValue: item?.engravingOne.value.toString(),
+      engravingTwoValue: item?.engravingTwo.value.toString(),
+      reduction: item?.reduction.name,
+      reductionValue: item?.reduction.value,
+      quality: item?.quality,
+      type: item?.type,
+    }
+  }, [item, isEdit]);
+
   const [data, setData] = useState(dataInitialState);
   const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    setData(dataInitialState);
+  }, [item, dataInitialState]);
   
   const handleChange = (e: string, v: string) => setData({ ...data, [e]: v});
 
@@ -102,7 +126,11 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     //format data
     const formattedAccessory = formatAccessory(data)
     // Add new data to the array
-    existingArray.push(formattedAccessory);
+    if (isEdit) {
+      existingArray[index as number] = formattedAccessory;
+    } else {
+      existingArray.push(formattedAccessory);
+    }
 
     // Store the updated array back in local storage
     localStorage.setItem('accessories', JSON.stringify(existingArray));
@@ -112,7 +140,11 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   }
 
   const handleClear = () => {
-    setData(dataInitialState);
+    if (isEdit) {
+      addAccessoryModal.onClose();
+    } else {
+      setData(dataInitialState);
+    }
   }
 
   const types = Object.entries(getAccessoryTypes()).map(([key, value]) => (
@@ -148,110 +180,237 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     maxStat = 200;
   }
 
-  let bodyContent = (
-    <Card>
-      <CardHeader>
-        <CardDescription>Add your accessories from your characters.</CardDescription>
-      </CardHeader>
-      <CardContent>
-          <Flex gap="4" flexDirection="column">
-            <Input
-              label="Select accessory type"
-              name="type"
-              options={types}
-              onChange={(e: string, v: string) => handleChange(e, v)}
-              value={data.type}
-              required
-            />
-          <Input 
-            label="Select combat stat"
-            name="combatOne"
-            options={stats}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={data.combatOne}
-            required
-          />
-          <SliderInput 
-            max={maxStat} 
-            min={minStat}
-            name="combatOneValue"
-            value={data.combatOneValue}
-            onChange={handleSliderChange} 
-          />
-          {data.type === 'NECKLACE' && (
-            <>
-              <Input 
-                label="Select combat stat"
-                name="combatTwo"
-                options={stats}
+  let bodyContent;
+
+  if (addAccessoryModal.isEdit) {
+    bodyContent = (
+      <Card>
+        <CardHeader>
+          <CardDescription>Edit this accessory from your character.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Flex gap="4" flexDirection="column">
+              <Input
+                label="Select accessory type"
+                name="type"
+                options={types}
                 onChange={(e: string, v: string) => handleChange(e, v)}
-                value={data.combatTwo}
+                value={data.type}
                 required
               />
-              <SliderInput 
-                max={maxStat} 
-                min={minStat}
-                name="combatTwoValue"
-                value={data.combatTwoValue}
-                onChange={handleSliderChange} 
+            <Input 
+              label="Select combat stat"
+              name="combatOne"
+              options={stats}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.combatOne}
+              required
+            />
+            <SliderInput 
+              max={maxStat} 
+              min={minStat}
+              name="combatOneValue"
+              value={data.combatOneValue}
+              onChange={handleSliderChange} 
+            />
+            {data.type === 'NECKLACE' && (
+              <>
+                <Input 
+                  label="Select combat stat"
+                  name="combatTwo"
+                  options={stats}
+                  onChange={(e: string, v: string) => handleChange(e, v)}
+                  value={data.combatTwo}
+                  required
+                />
+                <SliderInput 
+                  max={maxStat} 
+                  min={minStat}
+                  name="combatTwoValue"
+                  value={data.combatTwoValue}
+                  onChange={handleSliderChange} 
+                />
+              </>
+            )}
+            <Input 
+              label="Select engraving"
+              name="engravingOne"
+              options={engravingOptions}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.engravingOne}
+              required
+            />
+            <Input
+                label="Select level"
+                name="engravingOneValue"
+                options={engravings}
+                onChange={(e: string, v: string) => handleChange(e, v)}
+                value={data.engravingOneValue}
+                required
+            />
+            <Input 
+              label="Select engraving"
+              name="engravingTwo"
+              options={engravingOptions}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.engravingTwo}
+              required
+            />
+            <Input
+                label="Select level"
+                name="engravingTwoValue"
+                options={engravings}
+                onChange={(e: string, v: string) => handleChange(e, v)}
+                value={data.engravingTwoValue}
+                required
+            />
+            <Input 
+              label="Select reduction"
+              name="reduction"
+              options={reduction}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.reduction}
+              required
+            />
+            <SliderInput
+              min={1} 
+              max={3} 
+              name="reductionValue"
+              value={data.reductionValue}
+              onChange={handleSliderChange} 
+            />
+          </Flex>
+        </CardContent>
+        {/* <CardFooter className="flex justify-between">
+          <ClearButton label='Clear' onClick={handleClear} />
+          <SubmitButton label='Add' onClick={handleSubmit} />
+        </CardFooter> */}
+      </Card>
+    );
+  } else {
+    bodyContent = (
+      <Card>
+        <CardHeader>
+          <CardDescription>Add your accessories from your characters.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Flex gap="4" flexDirection="column">
+              <Input
+                label="Select accessory type"
+                name="type"
+                options={types}
+                onChange={(e: string, v: string) => handleChange(e, v)}
+                value={data.type}
+                required
               />
-            </>
-          )}
-          <Input 
-            label="Select engraving"
-            name="engravingOne"
-            options={engravingOptions}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={data.engravingOne}
-            required
-          />
-          <Input
-              label="Select level"
-              name="engravingOneValue"
-              options={engravings}
+            <Input 
+              label="Select combat stat"
+              name="combatOne"
+              options={stats}
               onChange={(e: string, v: string) => handleChange(e, v)}
-              value={data.engravingOneValue}
+              value={data.combatOne}
               required
-          />
-          <Input 
-            label="Select engraving"
-            name="engravingTwo"
-            options={engravingOptions}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={data.engravingTwo}
-            required
-          />
-          <Input
-              label="Select level"
-              name="engravingTwoValue"
-              options={engravings}
+            />
+            <SliderInput 
+              max={maxStat} 
+              min={minStat}
+              name="combatOneValue"
+              value={data.combatOneValue}
+              onChange={handleSliderChange} 
+            />
+            {data.type === 'NECKLACE' && (
+              <>
+                <Input 
+                  label="Select combat stat"
+                  name="combatTwo"
+                  options={stats}
+                  onChange={(e: string, v: string) => handleChange(e, v)}
+                  value={data.combatTwo}
+                  required
+                />
+                <SliderInput 
+                  max={maxStat} 
+                  min={minStat}
+                  name="combatTwoValue"
+                  value={data.combatTwoValue}
+                  onChange={handleSliderChange} 
+                />
+              </>
+            )}
+            <Input 
+              label="Select engraving"
+              name="engravingOne"
+              options={engravingOptions}
               onChange={(e: string, v: string) => handleChange(e, v)}
-              value={data.engravingTwoValue}
+              value={data.engravingOne}
               required
-          />
-          <Input 
-            label="Select reduction"
-            name="reduction"
-            options={reduction}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={data.reduction}
-            required
-          />
-          <SliderInput
-            min={1} 
-            max={3} 
-            name="reductionValue"
-            value={data.reductionValue}
-            onChange={handleSliderChange} 
-          />
-        </Flex>
-      </CardContent>
-      {/* <CardFooter className="flex justify-between">
-        <ClearButton label='Clear' onClick={handleClear} />
-        <SubmitButton label='Add' onClick={handleSubmit} />
-      </CardFooter> */}
-    </Card>
-  );
+            />
+            <Input
+                label="Select level"
+                name="engravingOneValue"
+                options={engravings}
+                onChange={(e: string, v: string) => handleChange(e, v)}
+                value={data.engravingOneValue}
+                required
+            />
+            <Input 
+              label="Select engraving"
+              name="engravingTwo"
+              options={engravingOptions}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.engravingTwo}
+              required
+            />
+            <Input
+                label="Select level"
+                name="engravingTwoValue"
+                options={engravings}
+                onChange={(e: string, v: string) => handleChange(e, v)}
+                value={data.engravingTwoValue}
+                required
+            />
+            <Input 
+              label="Select reduction"
+              name="reduction"
+              options={reduction}
+              onChange={(e: string, v: string) => handleChange(e, v)}
+              value={data.reduction}
+              required
+            />
+            <SliderInput
+              min={1} 
+              max={3} 
+              name="reductionValue"
+              value={data.reductionValue}
+              onChange={handleSliderChange} 
+            />
+          </Flex>
+        </CardContent>
+        {/* <CardFooter className="flex justify-between">
+          <ClearButton label='Clear' onClick={handleClear} />
+          <SubmitButton label='Add' onClick={handleSubmit} />
+        </CardFooter> */}
+      </Card>
+    );
+  }
+
+  //edit mode
+  if (addAccessoryModal.isEdit) {
+    return (
+      <Modal
+        isOpen={addAccessoryModal.isOpen}
+        onClose={addAccessoryModal.onClose}
+        onSubmit={handleSubmit}
+        actionLabel="Edit"
+        secondaryAction={handleClear}
+        secondaryActionLabel='Clear'
+        title="Edit accessory"
+        body={bodyContent}
+      />
+    )
+  }
+
+  //add mode
   return (
     <Modal
       isOpen={addAccessoryModal.isOpen}

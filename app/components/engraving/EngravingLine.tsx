@@ -11,23 +11,25 @@ interface IParams {
     icon?: any;
     engraving: string;
     value: number;
+    key: any;
 }
 
 const EngravingLine: React.FC<IParams> = ({
     icon,
     engraving,
     value,
+    key,
 }) => {
     const isReduce = isReduction(engraving);
     
     return (
-        <EngravingReduction.Provider value={isReduce}>
-            <Box className='w-full max-h-[100px]'>
-                <Flex className="items-center">
-                    <Box className='w-1/6'>
+        <EngravingReduction.Provider value={isReduce} key={key}>
+            <Box className='w-full'>
+                <Flex className="items-center" gap={1}>
+                    <Box className='hidden md:block'>
                         <EngravingIcon engraving={engraving} />
                     </Box>
-                    <Box className='w-5/6'>
+                    <Box className='w-full'>
                         <Flex flexDirection='column' gap='1'>
                             <Flex className={`relative justify-between bg-gradient-to-b shadow-inner px-2 py-1
                                 ${!isReduce && value >= 15 ? 'from-yellow-600 to-black' : 

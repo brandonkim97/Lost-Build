@@ -5,9 +5,14 @@ import {
     SelectGroup,
     SelectItem,
     SelectLabel,
+    SelectSeparator,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Button } from "@chakra-ui/react";
+import { X } from "lucide-react";
+
+//https://ui.shadcn.com/docs/components/combobox
 
 interface InputProps {
     label: string;
@@ -38,12 +43,17 @@ const Input: React.FC<InputProps> = ({
             required={required}
             value={value}
         >
+        {/* <X className="h-4 w-4 opacity-50 z-auto" onClick={() => onChange(name, '')} /> */}
             <SelectTrigger>
                 <SelectValue placeholder={label} />
             </SelectTrigger>
+                
             <SelectContent>
+                <SelectGroup>
                 {options}
+                </SelectGroup>
             </SelectContent>
+            
         </Select>
     )
 }

@@ -6,6 +6,7 @@ interface DataParams {
     accessories: Accessory[];
     engravingBooks: Engraving[];
     abilityStones: AbilityStone[];
+    combatStats: { [key: string]: string };
 }
 
 interface DesiredParams {
@@ -17,11 +18,7 @@ interface DesiredParams {
     engravingSix: string;
 }
 
-interface Count {
-    NECKLACE: number;
-    EARRING: number;
-    RING: number;
-}
+type Count = { [key: string]: { [key: string]: number }};
 
 interface EngravingLevels {
     levels: { [key: string]: number };
@@ -48,10 +45,10 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name)
     });
-    console.log(engravingBooks)
     //generate all engraving book pairs
     let bookPairs = generateBookPairs(filteredBooks);
     // console.log(bookPairs)
+    const allStatReqs = getAllStatReqs(data.combatStats);
 
     //create builds
     const unique = new Set<string>;
@@ -59,7 +56,7 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
         for (const stone of filteredStones) {
             await generateCombination(
                 0,
-                { NECKLACE: 1, EARRING: 2, RING: 2},
+                { ...allStatReqs },
                 filteredAccessories,
                 [],
                 builds,
@@ -75,7 +72,7 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
     // console.log('levels: ', levels);
 
     //get top 3 builds
-    const top3 = getTopThreeBuilds(levels);
+    const top3 = getTopThreeBuilds(levels, desiredEngravings);
     return top3;
 }
 
@@ -89,7 +86,7 @@ function generateCombination(
     pair: Engraving[],
     stone: AbilityStone,
 ) {
-    if (!(count.NECKLACE || count.EARRING || count.RING)) {
+    if (hasAllAccessories(count)) {
         //push build to build array
         let key = (currentBuild.map(accessory => accessory.uid)).join('-');
         key += `-${pair[0].name}-${pair[1].name}-${stone.engravingOne.name}-${stone.engravingOne.value}-${stone.engravingTwo.name}-${stone.engravingTwo.value}`;
@@ -103,13 +100,25 @@ function generateCombination(
 
     //loop through accessories
     for (let i = index; i < accessories.length; i++) {
-        const type = accessories[i].type;
-        if (count[type] > 0) {
+        const type = accessories[i].type, stat1 = accessories[i].combatOne.name;
+        let stat2;
+
+        //Check necklace
+        if (type === 'NECKLACE') stat2 = accessories[i].combatTwo?.name;
+        if (type === 'NECKLACE' && count[type][stat1] > 0 && count[type][stat2 as string] > 0) {
             currentBuild.push(accessories[i]);
-            count[type]--;
+            count[type][stat1]--;
+            count[type][stat2 as string]--;
             generateCombination(i + 1, count, accessories, currentBuild, builds, unique, pair, stone);
             currentBuild.pop();
-            count[type]++;
+            count[type][stat1]++;
+            count[type][stat2 as string]++;
+        } else if (type !== 'NECKLACE' && count[type][stat1] > 0) { //Check earring, ring
+            currentBuild.push(accessories[i]);
+            count[type][stat1]--;
+            generateCombination(i + 1, count, accessories, currentBuild, builds, unique, pair, stone);
+            currentBuild.pop();
+            count[type][stat1]++;
         }
     }
 }
@@ -193,16 +202,16 @@ function getEngravingLevels(builds: Build[]) {
     return res;
 }
 
-function getTopThreeBuilds(levels: EngravingLevels[]) {
+function getTopThreeBuilds(levels: EngravingLevels[], desiredEngravings: DesiredParams) {
     const map = new Map<number, EngravingLevels[]>();
     const res = [];
     let count = parseInt(process.env.NUM_BUILDS as string, 10);
     const maxNodes = parseInt(process.env.MAX_NODES as string, 10);
-    // console.log(levels)
+    // console.log(desiredEngravings)
     for (const data of levels) {
         let level1 = 0, level2 = 0, level3 = 0;
         for (const key in data.levels) {
-            if (isReduction(key)) continue;
+            if (isReduction(key) || !Object.values(desiredEngravings).includes(key)) continue;
             if ((data['levels'][key] as number) >= 15) level3 += 15;
             else if ((data['levels'][key] as number) >= 10) level2 += 10;
             else if ((data['levels'][key] as number) >= 5) level1 += 5;
@@ -232,5 +241,65 @@ function push(map: Map<number, EngravingLevels[]>, key: number, value: Engraving
     } else {
         map.set(key, [value]);
     }
+}
+
+const getAllStatReqs = (stats: { [key: string]: string }) => {
+    const res: { [key: string]: { [key: string]: number }} = {
+        NECKLACE: {
+            'CRIT': 0,
+            'SPECIALIZATION': 0,
+            'DOMINATION': 0,
+            'ENDURANCE': 0,
+            'SWIFTNESS': 0,
+            'EXPERTISE': 0,
+        },
+        EARRING: {
+            'CRIT': 0,
+            'SPECIALIZATION': 0,
+            'DOMINATION': 0,
+            'ENDURANCE': 0,
+            'SWIFTNESS': 0,
+            'EXPERTISE': 0,
+        },
+        RING: {
+            'CRIT': 0,
+            'SPECIALIZATION': 0,
+            'DOMINATION': 0,
+            'ENDURANCE': 0,
+            'SWIFTNESS': 0,
+            'EXPERTISE': 0,
+        }
+    };
+
+    for (const key in stats) {
+        switch(key) {
+            case 'necklaceOne':
+            case 'necklaceTwo':
+                res['NECKLACE'][stats[key]]++;
+                break;
+            case 'earringOne':
+            case 'earringTwo':
+                res['EARRING'][stats[key]]++;
+                break;
+            case 'ringOne':
+            case 'ringTwo':
+                res['RING'][stats[key]]++;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return res;
+}
+
+const hasAllAccessories = (count: Count) => {
+    for (const acc in count) {
+        for (const stat in count[acc]) {
+            if (count[acc][stat] !== 0) return false;
+        }
+    }
+
+    return true;
 }
 

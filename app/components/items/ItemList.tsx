@@ -84,38 +84,50 @@ const ItemList: React.FC<IParams> = ({
                         <Item type='STONE' isActive={activeItem === 'abilityStone'}  />
                     </GridItem>
                 </Grid>
-                <Flex gap={0.5} marginY={2} className='justify-between'>
-                    <ItemType 
-                        icon={<GiIntricateNecklace />} 
-                        onClick={() => handleActive('necklace')}
-                        isActive={activeItem === 'necklace'} 
-                    />
-                    <ItemType 
-                        icon={<GiEarrings />} 
-                        isActive={activeItem === 'earringOne'} 
-                        onClick={() => handleActive('earringOne')}
-                    />
-                    <ItemType 
-                        icon={<GiEarrings />} 
-                        isActive={activeItem === 'earringTwo'} 
-                        onClick={() => handleActive('earringTwo')}
-                    />
-                    <ItemType 
-                        icon={<GiBigDiamondRing />} 
-                        isActive={activeItem === 'ringOne'} 
-                        onClick={() => handleActive('ringOne')}
-                    />
-                    <ItemType 
-                        icon={<GiBigDiamondRing />} 
-                        isActive={activeItem === 'ringTwo'} 
-                        onClick={() => handleActive('ringTwo')}
-                    />
-                    <ItemType 
-                        icon={<IoDiamond />} 
-                        isActive={activeItem === 'abilityStone'} 
-                        onClick={() => handleActive('abilityStone')}
-                    />
-                </Flex>
+                <Grid gap={0.5} marginY={2} className='grid-cols-3 lg:grid-cols-6 justify-between'>
+                    <GridItem>
+                        <ItemType 
+                            icon={<GiIntricateNecklace />} 
+                            onClick={() => handleActive('necklace')}
+                            isActive={activeItem === 'necklace'} 
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <ItemType 
+                            icon={<GiEarrings />} 
+                            isActive={activeItem === 'earringOne'} 
+                            onClick={() => handleActive('earringOne')}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <ItemType 
+                            icon={<GiEarrings />} 
+                            isActive={activeItem === 'earringTwo'} 
+                            onClick={() => handleActive('earringTwo')}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <ItemType 
+                            icon={<GiBigDiamondRing />} 
+                            isActive={activeItem === 'ringOne'} 
+                            onClick={() => handleActive('ringOne')}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <ItemType 
+                            icon={<GiBigDiamondRing />} 
+                            isActive={activeItem === 'ringTwo'} 
+                            onClick={() => handleActive('ringTwo')}
+                        />
+                    </GridItem>
+                    <GridItem>
+                        <ItemType 
+                            icon={<IoDiamond />} 
+                            isActive={activeItem === 'abilityStone'} 
+                            onClick={() => handleActive('abilityStone')}
+                        />
+                    </GridItem>
+                </Grid>
                 <Box className='py-[0.5px] rounded bg-yellow-600 my-2' />
                 <Box paddingX={2}>
                     <ItemDetails 

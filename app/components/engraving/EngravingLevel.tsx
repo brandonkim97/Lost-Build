@@ -50,7 +50,7 @@ const EngravingLevel: React.FC<IParams> = ({
             <Box className={`font-semibold ${bgColor}`}>
                 <Text>{label}</Text>
             </Box>
-            <Flex className='justify-center' gap='1'>
+            <Flex className='justify-center scale-50 md:scale-75 lg:scale-100' gap='1'>
                 {filledNodes}
                 {emptyNodes}
             </Flex>

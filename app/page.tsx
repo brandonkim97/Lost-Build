@@ -23,6 +23,9 @@ import { formatLevels } from "./utils/formatData";
 import EngravingContext from "./contexts/EngravingContext";
 import SelectBuild from './components/inputs/SelectBuild';
 import { getCombatStats } from './libs/getItemData';
+import SubmitButton from './components/buttons/SubmitButton';
+import { Separator } from "@/components/ui/separator";
+import List from './components/List';
 
 interface EngravingLevels {
   levels: { [key: string]: (string | number)[][] };
@@ -42,8 +45,12 @@ export default function Home() {
     engravingSix: '',
   };
   const statsInitialState = {
-    combatOne: '',
-    combatTwo: '',
+    necklaceOne: '',
+    necklaceTwo: '',
+    earringOne: '',
+    earringTwo: '',
+    ringOne: '',
+    ringTwo: '',
   }
   const [desiredEngravings, setDesiredEngravings] = useState(dataInitialState);
   const [desiredStats, setDesiredStats] = useState(statsInitialState)
@@ -124,8 +131,11 @@ export default function Home() {
   const handleEngravingChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
   const handleStatChange = (e: string, v: string) => setDesiredStats({ ...desiredStats, [e]: v});
 
-  const handleClear = () => {
+  const handleEngravingClear = () => {
     setDesiredEngravings(dataInitialState);
+  }
+
+  const handleStatClear = () => {
     setDesiredStats(statsInitialState);
   }
 
@@ -164,13 +174,14 @@ export default function Home() {
 
   return (
     <EngravingContext.Provider value={engravings}>
-      <main className="flex min-h-screen w-[1500px] flex-col py-24">
+      <main className="flex min-h-screen md:w-[1500px] flex-col py-24">
         <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
         <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
         <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
-        <Flex gap="6" flexDirection="row" flex={1} className="max-h-[200px]">
+        <Flex gap="6" flexDirection="row" flex={1} marginBottom={6}>
           <Box gap="4" className="w-1/3">
             <ModalButton onClick={onAddAccessory} label='Add Accessory' />
+            <List data={accessories} setItemData={(e) => setItemData(e, setAccessories)} />
           </Box>
           <Box gap="4" className="w-1/3">
             <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
@@ -180,64 +191,102 @@ export default function Home() {
           </Box>
         </Flex>
         <Card>
-          <Flex flexDirection="row" className=''>
-            <Box className='w-1/5'>
+          <Flex flexDirection='column'>
+            <Flex>
+              <Box>
+                <SelectBuild 
+                  label='Choose engravings'
+                  description='Select the engravings/combat stats for your final build.'
+                  inputLabel='Select engraving'
+                  options={engravingOptions} 
+                  selected={desiredEngravings}
+                  handleChange={(e: string, v: string) => handleEngravingChange(e, v)}
+                  onClear={handleEngravingClear}
+                />
+              </Box>
+              <Box className='py-6'>
+                <Separator orientation="vertical" />
+              </Box>
+              <Box>
               <SelectBuild 
-                engravingOptions={engravingOptions} 
-                combatOptions={combatStatOptions}
-                desiredEngravings={desiredEngravings}
-                desiredStats={desiredStats}
-                handleEngravingChange={(e: string, v: string) => handleEngravingChange(e, v)}
-                handleStatChange={(e: string, v: string) => handleStatChange(e, v)}
-                onClear={handleClear}
-                onSubmit={handleSubmit}
-              />
-            </Box>
-            <Box className='w-4/5'>
+                  label='Choose combat stats'
+                  description='Select the combat stats you prefer for each accessory in your final build.'
+                  inputLabel='Select combat stat'
+                  options={combatStatOptions}
+                  selected={desiredStats}
+                  handleChange={(e: string, v: string) => handleStatChange(e, v)}
+                  onClear={handleStatClear}
+                />
+              </Box>
+              <Box className='py-6'>
+                <Separator orientation="vertical" />
+              </Box>
+              <Box className='flex flex-col' p={6}>
+                <Box className='' maxW="300px">
+                  <Text fontSize='3xl' className='self-start' >Note:</Text>
+                  <Text fontSize='sm'>
+                    Some of your preferred builds may not be generated if the necessary accessories are not available. 
+                    This generator will only show the best possible build with the acessories you provide it.
+                  </Text>
+                </Box>
+                <Box className='flex grow top-0 content-end flex-wrap justify-end'>
+                  <SubmitButton label='Generate' onClick={handleSubmit} />
+                </Box>
+              </Box>
+            </Flex>
+            <Box>
               {builds.length > 0 && (
-                <Flex>
-                  <Box className='w-3/4'>
-                    <ScrollArea className="h-[600px] pr-4">
-                      {builds.length && builds[0].levels.three.map((item, index) => (
-                        <Box key={index}>
-                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                        </Box>
-                      ))}
-                      {builds.length && builds[0].levels.two.map((item, index) => (
-                        <Box key={index}>
-                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                        </Box>
-                      ))}
-                      {builds.length && builds[0].levels.one.map((item, index) => (
-                        <Box key={index}>
-                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                        </Box>
-                      ))}
-                      {builds.length && builds[0].levels.zero.map((item, index) => (
-                        <Box key={index}>
-                          <EngravingLine engraving={item[0] as string} value={item[1] as number} />
-                        </Box>
-                      ))}
-                    </ScrollArea>
+                <>
+                  <Box className='px-6 py-4'>
+                    <Separator orientation="horizontal" />
                   </Box>
-                  <Flex flexDirection='column' className="w-1/4 px-4 py-6 text-center">
-                    <ItemList build={builds[0].build} />
+                  <Flex p={6}>
+                    <Box className='w-3/4'>
+                      <ScrollArea className="h-[600px] pr-4">
+                        {builds.length && builds[0].levels.three.map((item, index) => (
+                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                        ))}
+                        {builds.length && builds[0].levels.two.map((item, index) => (
+                          <Box key={index}>
+                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                          </Box>
+                        ))}
+                        {builds.length && builds[0].levels.one.map((item, index) => (
+                          <Box key={index}>
+                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                          </Box>
+                        ))}
+                        {builds.length && builds[0].levels.zero.map((item, index) => (
+                          <Box key={index}>
+                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                          </Box>
+                        ))}
+                      </ScrollArea>
+                    </Box>
+                    <Flex flexDirection='column' className="w-1/4 px-4 text-center">
+                      <ItemList build={builds[0].build} />
+                    </Flex>
                   </Flex>
-                </Flex>
+                </>
                 )}
                 {!builds.length && showNoBuilds && (
-                  <Flex className='h-full w-full justify-center items-center px-20' gap={20}>
-                    <Box className='w-1/3'>
-                      <Text fontSize='xl'>
-                        <Text fontSize='4xl'>
-                          Oops,
-                        </Text>No builds could be generated. Try adding some more accessories!
-                      </Text>
+                  <>
+                    <Box className='px-6 py-4'>
+                      <Separator orientation="horizontal" />
                     </Box>
-                    <Box className='w-2/3'>
-                      <Image src='/images/mokoko_fire.png' alt='No builds available' boxSize='300px' />
-                    </Box>
-                  </Flex>
+                    <Flex className='h-full w-full justify-center items-center px-20' gap={20}>
+                      <Box className='w-1/3'>
+                        <Text fontSize='xl'>
+                          <Text fontSize='4xl'>
+                            Oops,
+                          </Text>No builds could be generated. Try adding some more accessories!
+                        </Text>
+                      </Box>
+                      <Box className='w-2/3'>
+                        <Image src='/images/mokoko_fire.png' alt='No builds available' boxSize='300px' />
+                      </Box>
+                    </Flex>
+                  </>
                 )}
             </Box>
           </Flex>

@@ -14,7 +14,7 @@ const SubmitButton: React.FC<IParams> = ({
     disabled,
 }) => {
     return (
-        <Button onClick={onClick} variant={variant ?? 'default'} disabled={disabled}>
+        <Button onClick={onClick} variant={variant ?? 'default'} disabled={disabled} className='w-full'>
             {label}
         </Button>
     )
