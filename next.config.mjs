@@ -1,4 +1,4 @@
-const headers = require('./headers');
+import headers from './headers';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
