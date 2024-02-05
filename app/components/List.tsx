@@ -8,6 +8,8 @@ import { getCombatStat } from "../libs/getItemData";
 import useAddAccessoryModal from "../hooks/useAddAccessoryModal";
 import useAddAbilityStoneModal from "../hooks/useAddAbilityStoneModal";
 import useAddEngravingBookModal from "../hooks/useAddEngravingBookModal";
+import { RemoveButton } from "./buttons/RemoveButton";
+import { EditButton } from "./buttons/EditButton";
 
 interface IParams {
     data: Accessory[] | Book[] | AbilityStone[];
@@ -30,8 +32,8 @@ const List: React.FC<IParams> = ({
     }
     // console.log(data);
 
-    const handleChange = (index: number) => {
-
+    const handleRemove = (index: number, key: string) => {
+        
     }
 
     let mapContent;
@@ -58,20 +60,72 @@ const List: React.FC<IParams> = ({
                                 </Flex>
                             </Flex>
                             <Flex gap={4}>
-                                <Text fontSize='sm' onClick={() => addAccessoryModal.onEdit(value, index)}>Edit</Text>
-                                <Text fontSize='sm'>Remove</Text>
+                                <EditButton onClick={() => addAccessoryModal.onEdit(value, index)} />
+                                <RemoveButton index={index} storageKey='accessories' setItemData={setItemData} />
                             </Flex>
                         </Flex>
                         <Separator className='my-2' />
                     </Box>
                 </>
             ))
-        )
-        
-    } else if ('name' in data) { //book
-    
+        );
+    } else if ('name' in data[0]) { //book
+        mapContent = (
+            (data as Book[]).map((value, index) => (
+                <>
+                    <Box key={index}>
+                        <Flex gap={4} className='items-center my-6'>
+                            <Box w={8} h={8} className='border'></Box>
+                            <Flex flexDirection='column'>
+                                <Flex gap={2}>
+                                    <Text fontSize='sm' color='yellow'>
+                                        {engravingContext[value.name]}
+                                    </Text>
+                                    <Text fontSize='sm' color='yellow'>
+                                        {value.value}
+                                    </Text>
+                                </Flex>
+                            </Flex>
+                            <Flex gap={4}>
+                                <EditButton onClick={() => addEngravingBookModal.onEdit(value, index)} />
+                                <RemoveButton index={index} storageKey='engraving-book' setItemData={setItemData} />
+                            </Flex>
+                        </Flex>
+                        <Separator className='my-2' />
+                    </Box>
+                </>
+            ))
+        );
     } else { //stone
-
+        mapContent = (
+            (data as AbilityStone[]).map((value, index) => (
+                <>
+                    <Box key={index}>
+                        <Flex gap={4} className='items-center my-6'>
+                            <Box w={8} h={8} className='border'></Box>
+                            <Flex flexDirection='column'>
+                                <Flex gap={2}>
+                                    <Text fontSize='sm' color='yellow'>
+                                        {engravingContext[value.engravingOne.name]}
+                                    </Text>
+                                    <Text fontSize='sm' color='yellow'>
+                                        {engravingContext[value.engravingTwo.name]}
+                                    </Text>
+                                    <Text fontSize='sm' color='red'>
+                                        {engravingContext[value.reduction.name]}
+                                    </Text>
+                                </Flex>
+                            </Flex>
+                            <Flex gap={4}>
+                                <EditButton onClick={() => addAbilityStoneModal.onEdit(value, index)} />
+                                <RemoveButton index={index} storageKey='ability-stones' setItemData={setItemData} />
+                            </Flex>
+                        </Flex>
+                        <Separator className='my-2' />
+                    </Box>
+                </>
+            ))
+        );
     }
 
     return (

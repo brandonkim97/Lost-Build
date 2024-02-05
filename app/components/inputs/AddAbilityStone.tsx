@@ -1,5 +1,5 @@
 import Input from "./Input";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { stoneLevels } from "@/app/libs/getEngravingData";
 import { getReduction } from "@/app/libs/getItemData";
 import SliderInput from "../SliderInput";
@@ -32,25 +32,32 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     setItemData
 }) => {
     const addAbilityStoneModal = useAddAbilityStoneModal();
-    const dataInitialState = {
-        engravingOne: '',
-        engravingOneValue: '',
-        engravingTwo: '',
-        engravingTwoValue: '',
-        reduction: '',
-        reductionValue: 0,
-    }
+    const { isEdit, item, index } = addAbilityStoneModal;
+    const dataInitialState = useMemo(() => {
+        return !isEdit && {
+            engravingOne: '',
+            engravingOneValue: '',
+            engravingTwo: '',
+            engravingTwoValue: '',
+            reduction: '',
+            reductionValue: 0,
+        } 
+            ||
+        {
+            engravingOne: item?.engravingOne.name,
+            engravingOneValue: item?.engravingOne.value.toString(),
+            engravingTwo: item?.engravingTwo.name,
+            engravingTwoValue: item?.engravingTwo.value.toString(),
+            reduction: item?.reduction.name,
+            reductionValue: item?.reduction.value.toString(),
+        }
+    }, [item, isEdit]);
     const [stone, setStone] = useState(dataInitialState)
 
-    // const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    //     const { name, value } = e.target;
-    //     const parsed = parseString(name, value);
+    useEffect(() => {
+        setStone(dataInitialState);
+    }, [dataInitialState]);
 
-    //     setStone({
-    //         ...stone,
-    //         [name]: parsed,
-    //     });
-    // }
     
     const handleChange = (e: string, v: string) => setStone({ ...stone, [e]: v});
 
@@ -78,7 +85,14 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     }
 
     const handleClear = () => {
-        setStone(dataInitialState);
+        setStone({
+            engravingOne: '',
+            engravingOneValue: '',
+            engravingTwo: '',
+            engravingTwoValue: '',
+            reduction: '',
+            reductionValue: 0,
+        } );
     }    
 
     const isValid = () => {
@@ -95,11 +109,19 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         if (!isValid()) return;
         const stoneString = localStorage.getItem('ability-stones');
         const stoneArray = stoneString ? JSON.parse(stoneString) : [];
-        const formattedStone = formatStones(stone)
-        stoneArray.push(formattedStone);
+        const formattedStone = formatStones(stone);
+
+        if (isEdit) {
+            stoneArray[index as number] = formattedStone;
+        } else {
+            stoneArray.push(formattedStone);
+        }
+
         localStorage.setItem('ability-stones', JSON.stringify(stoneArray));
         setItemData(stoneArray);
         setStone(dataInitialState);
+        if (isEdit) addAbilityStoneModal.onClose();
+        handleClear();
     }
 
     const levelOptions = Object.entries(stoneLevels).map(([key, value]) => {
@@ -113,11 +135,10 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
             <SelectItem key={key} value={key}>{value}</SelectItem>
         )
     });
-
+    
     const bodyContent = (
-        <Card className="">
+        <Card>
             <CardHeader>
-                <CardTitle>Add ability stone</CardTitle>
                 <CardDescription>All your stones will be considered in the final builds.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -172,7 +193,22 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
                 </Flex>
             </CardContent>
         </Card>
-    )
+    );
+
+    if (addAbilityStoneModal.isEdit) {
+        return (
+            <Modal
+                isOpen={addAbilityStoneModal.isOpen}
+                onClose={addAbilityStoneModal.onClose}
+                onSubmit={handleSubmit}
+                actionLabel="Edit"
+                secondaryAction={handleClear}
+                secondaryActionLabel='Clear'
+                title="Edit ability stone"
+                body={bodyContent}
+            />
+        )
+    }
 
     return (
         <Modal

@@ -1,5 +1,5 @@
 import Input from "./Input";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { bookLevels } from "@/app/libs/getEngravingData";
 import { SelectItem } from "@/components/ui/select";
 import {
@@ -26,26 +26,49 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     setItemData,
 }) => {
     const addEngravingBookModal = useAddEngravingBookModal();
-    const dataInitialState = {
-        name: '',
-        value: '',
-    }
+    const { isEdit, item, index } = addEngravingBookModal;
+    const dataInitialState = useMemo(() => {
+        return !isEdit && {
+            name: '',
+            value: '',
+        }
+            ||
+        {
+            name: item?.name,
+            value: item?.value.toString(),
+        }
+    }, [item, isEdit]);
     const [book, setBook] = useState(dataInitialState)
+
+    useEffect(() => {
+        setBook(dataInitialState);
+      }, [dataInitialState]);
 
     const handleChange = (e: string, v: string) => setBook({ ...book, [e]: v });
 
     const handleClear = () => {
-        setBook(dataInitialState);
+        setBook({
+            name: '',
+            value: '',
+        });
     }
 
     const handleSubmit = () => {
         const bookString = localStorage.getItem('engraving-book');
         const bookArray = bookString ? JSON.parse(bookString) : [];
         const formattedArray = formatBook(book);
-        bookArray.push(formattedArray);
+
+        if (isEdit) {
+            bookArray[index as number] = formattedArray;
+        } else {
+            bookArray.push(formattedArray);
+        }
+
         localStorage.setItem('engraving-book', JSON.stringify(bookArray));
         setItemData(bookArray);
         setBook(dataInitialState);
+        if (isEdit) addEngravingBookModal.onClose();
+        handleClear();
     }
 
     const bookLevelOptions = Object.entries(bookLevels).map(([key, value]) => (
@@ -55,8 +78,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     const bodyContent = (
         <Card>
             <CardHeader>
-                <CardTitle>Add engraving book</CardTitle>
-                <CardDescription>Add your engraving books from your characters.</CardDescription>
+                <CardDescription>All your engraving books will be considered in the final builds.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Flex gap="4" flexDirection="column">
@@ -79,7 +101,9 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
                 </Flex>
             </CardContent>
         </Card>
-    )
+    );
+    
+    const action = addEngravingBookModal.isEdit ? 'Edit' : 'Add';
 
     return (
         <Modal
@@ -89,7 +113,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
             actionLabel="Submit"
             secondaryAction={handleClear}
             secondaryActionLabel='Clear'
-            title="Add engraving book"
+            title={`${action} engraving book`}
             body={bodyContent}
         />
     )

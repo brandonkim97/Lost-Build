@@ -185,9 +185,11 @@ export default function Home() {
           </Box>
           <Box gap="4" className="w-1/3">
             <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
+            <List data={books} setItemData={(e) => setItemData(e, setBooks)} />
           </Box>
           <Box gap="4" className="w-1/3">
             <ModalButton onClick={onAddAbilityStone} label='Add ability stone' />
+            <List data={stones} setItemData={(e) => setItemData(e, setStones)} />
           </Box>
         </Flex>
         <Card>
