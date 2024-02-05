@@ -1,4 +1,4 @@
-module.exports = [
+const headers = [
     {
       key: 'X-DNS-Prefetch-Control',
       value: 'on',
@@ -32,3 +32,5 @@ module.exports = [
       value: 'geolocation=*', // allow specified policies here
     },
 ];
+
+export default headers;
