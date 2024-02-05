@@ -232,7 +232,7 @@ export default function Home() {
                   </Text>
                 </Box>
                 <Box className='flex grow top-0 content-end flex-wrap justify-end'>
-                  <SubmitButton label='Generate' onClick={handleSubmit} />
+                  <SubmitButton label='Generate' onClick={handleSubmit} classes='w-full' />
                 </Box>
               </Box>
             </Flex>

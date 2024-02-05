@@ -14,7 +14,7 @@ const ModalButton: React.FC<IParams> = ({
     disabled,
 }) => {
     return (
-        <Button onClick={onClick} variant={variant ?? 'secondary'} disabled={disabled}>
+        <Button onClick={onClick} variant={variant ?? 'secondary'} disabled={disabled} className='w-full'>
             {label}
         </Button>
     )

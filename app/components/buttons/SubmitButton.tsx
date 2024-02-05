@@ -5,6 +5,7 @@ interface IParams {
     onClick: () => void;
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined;
     disabled?: boolean;
+    classes?: string;
 }
 
 const SubmitButton: React.FC<IParams> = ({
@@ -12,9 +13,10 @@ const SubmitButton: React.FC<IParams> = ({
     onClick,
     variant,
     disabled,
+    classes
 }) => {
     return (
-        <Button onClick={onClick} variant={variant ?? 'default'} disabled={disabled}>
+        <Button onClick={onClick} variant={variant ?? 'default'} disabled={disabled} className={classes}>
             {label}
         </Button>
     )

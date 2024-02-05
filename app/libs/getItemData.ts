@@ -52,6 +52,21 @@ export const getReduction = (): { [key: string]: string }  => {
     }
 }
 
+export const getReduce = (reduction: string) => {
+    switch(reduction) {
+        case 'MOVE_SPEED_REDUCTION':
+            return 'Move Speed Reduction';
+        case 'ATTACK_SPEED_REDUCTION':
+            return 'Attack Speed Reduction';
+        case 'DEFENSE_REDUCTION':
+            return 'Defense Reduction';
+        case 'ATTACK_POWER_REDUCTION':
+            return 'Attack Power Reduction';
+        default:
+            return '';
+    }
+}
+
 export const isReduction = (key: string) => {
     return key === 'MOVE_SPEED_REDUCTION' ||
         key === 'ATTACK_SPEED_REDUCTION' ||
