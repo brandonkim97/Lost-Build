@@ -31,7 +31,6 @@ const List: React.FC<IParams> = ({
 
     if (!data || !data.length) {
         console.log('no data!');
-        return '';
     } else {
         if ('uid' in data[0]) { //accessory
             const icon = {
@@ -165,9 +164,19 @@ const List: React.FC<IParams> = ({
 
     return (
         <Card>
-            <ScrollArea className='border rounded p-3 h-[500px] mt-4'>
-                {mapContent}
-            </ScrollArea>
+            {typeof mapContent !== 'undefined' ? (
+                <ScrollArea className='border rounded p-3 h-[500px] mt-4'>
+                    {mapContent}
+                </ScrollArea>
+            ) : (
+                <Card className='border rounded p-4 h-[500px] mt-4'>
+                    <Flex flexDirection='column' className='h-full w-full place-content-center items-center'>
+                        <Image src='/images/no_data_found.png' alt='No Data Found Image' className='w-48 h-32 rounded-xl mb-2'/>
+                        <Text fontSize='2xl'>No data found</Text>
+                        <Text color='gray' fontSize='sm'>Try adding some items.</Text>
+                    </Flex>
+                </Card>
+            )}
         </Card>
     )
 }

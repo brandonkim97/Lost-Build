@@ -192,7 +192,7 @@ export default function Home() {
             <List data={stones} setItemData={(e) => setItemData(e, setStones)} />
           </Box>
         </Flex>
-        <Card>
+        <Card className='border'>
           <Flex flexDirection='column'>
             <Flex>
               <Box>
@@ -223,8 +223,8 @@ export default function Home() {
               <Box className='py-6'>
                 <Separator orientation="vertical" />
               </Box>
-              <Box className='flex flex-col' p={6}>
-                <Box className='' maxW="300px">
+              <Box className='flex flex-col grow' p={6}>
+                <Box className='self-center' maxW="300px">
                   <Text fontSize='3xl' className='self-start' >Note:</Text>
                   <Text fontSize='sm'>
                     Some of your preferred builds may not be generated if the necessary accessories are not available. 
