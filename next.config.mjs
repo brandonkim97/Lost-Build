@@ -1,4 +1,15 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+const headers = require('./headers');
 
-export default nextConfig;
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    async headers() {
+        return [
+            {
+                source: '/(.*)',
+                headers,
+            }
+        ]
+    }
+}
+
+module.exports = nextConfig
