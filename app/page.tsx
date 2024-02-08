@@ -154,24 +154,6 @@ export default function Home() {
 
   const setItemData: Function = (e: any, func: (e: any) => void): void => { func(e) }
 
-  const engravingOptions = useMemo(() => {
-    return Object.entries(engravings).map(([key, value]) => (
-      <SelectItem key={key} value={key}>{value}</SelectItem>
-    ));
-  }, []);
-
-  const combatEngravingOptions = useMemo(() => {
-    return Object.entries(combatEngravings).map(([key, value]) => (
-      <SelectItem key={key} value={key}>{value}</SelectItem>
-    ))
-  }, []);
-
-  const combatStatOptions = useMemo(() => {
-    return Object.entries(getCombatStats()).map(([key, value]) => (
-      <SelectItem key={key} value={key}>{value}</SelectItem>
-    ))
-  }, []);
-
   return (
     <EngravingContext.Provider value={engravings}>
       <main className="flex min-h-screen md:w-[1500px] flex-col py-24">

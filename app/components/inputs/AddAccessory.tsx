@@ -2,7 +2,7 @@
 import { getAccessoryTypes, getCombatStat, getCombatStats, getReduction, getType } from '../../libs/getItemData';
 import SliderInput from "../SliderInput";
 import { Box, Flex, FormControl, Image, Text } from '@chakra-ui/react'
-import { ChangeEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Input from "./Input";
 import { engravingLevels, getEngravingLevels } from '@/app/libs/getEngravingData';
 import { formatAccessory } from '@/app/utils/formatData';
@@ -10,19 +10,12 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { SelectItem } from '@/components/ui/select';
-import ClearButton from '../buttons/ClearButton';
-import SubmitButton from '../buttons/SubmitButton';
 import Modal from '../modals/Modal';
 import useAddAccessoryModal from '@/app/hooks/useAddAccessoryModal';
-import { CommandItem } from 'cmdk';
 import { Check } from 'lucide-react';
-import { CommandGroup } from '@/components/ui/command';
+import { CommandGroup, CommandItem } from '@/components/ui/command';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import EngravingContext from '@/app/contexts/EngravingContext';
 
@@ -98,7 +91,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     setData(dataInitialState);
   }, [dataInitialState]);
   
-  const handleChange = useCallback((e: string, v: string) => e !== 'type' ? setData({ ...data, [e]: v }) : setData({ ...dataInitialState, [e]: v }), [data]);
+  const handleChange = useCallback((e: string, v: string) => e !== 'type' ? setData({ ...data, [e]: v }) : setData({ ...dataInitialState, [e]: v }), [data, dataInitialState]);
 
   const handleSliderChange = (value: any, name: string) => {
     const parsed = parseString(name, value);
@@ -178,7 +171,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
           {Object.entries(func()).map(([key, value]) => (
             <CommandItem
               key={key}
-              value={key}
+              value={value as string}
               onSelect={() => handleChange(e, key)}
               className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
             >
@@ -278,14 +271,6 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
       </CardHeader>
       <CardContent>
           <Flex gap="4" flexDirection="column">
-            {/* <Input
-              label="Select accessory type"
-              name="type"
-              options={getOptions('type', getAccessoryTypes)}
-              onChange={(e: string, v: string) => handleChange(e, v)}
-              value={getType(data.type as string)}
-              required
-            /> */}
             {accessoryTypes}
           <Input 
             label="Select combat stat"
