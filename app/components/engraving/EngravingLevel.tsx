@@ -17,7 +17,15 @@ const EngravingLevel: React.FC<IParams> = ({
     const label = `Lv. ${level.toString()}`;
 
     const filledArray = Array.from({ length: nodes });
-    const filledNodes = filledArray.map((_, index) => (
+    const filledNodes = isReduce ? filledArray.map((_, index) => (
+        <Image 
+            key={index} 
+            src='/images/engraving_node_negative.png' 
+            alt='Engraving Node' 
+            className='scale-[0.8]' 
+        />
+    )) : 
+    filledArray.map((_, index) => (
         <Image 
             key={index} 
             src='/images/engraving_node_filled.png' 
@@ -25,6 +33,7 @@ const EngravingLevel: React.FC<IParams> = ({
             className='scale-[0.8]' 
         />
     ));
+
     const emptyArray = Array.from({ length: 5 - nodes });
     const emptyNodes = emptyArray.map((_, index) => (
         <Image 

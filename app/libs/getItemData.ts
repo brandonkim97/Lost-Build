@@ -6,6 +6,19 @@ export const getAccessoryTypes = () => {
     };
 }
 
+export const getType = (type: string) => {
+    switch(type) {
+        case 'NECKLACE':
+            return 'Necklace';
+        case 'EARRING':
+            return 'Earring';
+        case 'RING':
+            return 'Ring';
+        default:
+            return '';
+    }
+}
+
 export const getCombatStats = () => {
     return {
         'CRIT': 'Crit',

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IoMdClose } from 'react-icons/io'
 import SubmitButton from "../buttons/SubmitButton";
 import ClearButton from "../buttons/ClearButton";
@@ -32,10 +32,18 @@ const Modal: React.FC<ModalProps> = ({
     secondaryActionLabel
 }) => {
     const [showModal, setShowModal] = useState(isOpen);
+    const modalRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         setShowModal(isOpen);
-    }, [isOpen])
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (showModal && modalRef.current) {
+            modalRef.current.focus();
+        }
+    }, [showModal]);
+    
 
     const handleClose = useCallback(() => {
         if (disabled) {
@@ -85,7 +93,7 @@ const Modal: React.FC<ModalProps> = ({
                                                             <button 
                                                                 onClick={handleClose}
                                                                 className="p-1 border-0 hover:opacity-70
-                                                                    transition absolute left-9">
+                                                                    transition absolute left-9" ref={modalRef}  >
                                                                         <IoMdClose size={18} />
                                                             </button>
                                                             <div className="text-lg font-semibold">

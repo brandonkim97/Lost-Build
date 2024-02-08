@@ -1,5 +1,5 @@
 import Input from "./Input";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { bookLevels } from "@/app/libs/getEngravingData";
 import { SelectItem } from "@/components/ui/select";
 import {
@@ -15,16 +15,23 @@ import { Flex } from "@chakra-ui/react";
 import useAddEngravingBookModal from "@/app/hooks/useAddEngravingBookModal";
 import Modal from "../modals/Modal";
 import { formatBook } from "@/app/utils/formatData";
+import { CommandGroup, CommandItem } from "@/components/ui/command";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check } from "lucide-react";
+import EngravingContext from "@/app/contexts/EngravingContext";
 
 interface AddEngravingBookProps  {
-    engravingOptions: {};
     setItemData: (e: any) => void;
 }
 
+type DataType = {
+    [key: string]: string | number | undefined;
+}
+
 const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
-    engravingOptions,
     setItemData,
 }) => {
+    const engravingOptions = useContext(EngravingContext);
     const addEngravingBookModal = useAddEngravingBookModal();
     const { isEdit, item, index } = addEngravingBookModal;
     const dataInitialState = useMemo(() => {
@@ -38,13 +45,13 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
             value: item?.value.toString(),
         }
     }, [item, isEdit]);
-    const [book, setBook] = useState(dataInitialState)
+    const [book, setBook] = useState<DataType>(dataInitialState)
 
     useEffect(() => {
         setBook(dataInitialState);
       }, [dataInitialState]);
 
-    const handleChange = (e: string, v: string) => setBook({ ...book, [e]: v });
+    const handleChange = useCallback((e: string, v: string) => setBook({ ...book, [e]: v }), [book]);
 
     const handleClear = () => {
         setBook({
@@ -71,9 +78,57 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
         handleClear();
     }
 
-    const bookLevelOptions = Object.entries(bookLevels).map(([key, value]) => (
-        <SelectItem key={key} value={key}>{value}</SelectItem>
-    ));
+    const bookLevelOptions = useCallback(() => {
+        const options = (
+            <CommandGroup>
+              {Object.entries(bookLevels).map(([key, value]) => (
+                    <CommandItem 
+                        key={key} 
+                        value={key}
+                        onSelect={() => handleChange('value', key)}
+                        className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
+                    >
+                        <Check
+                        className={`
+                            mr-2 h-4 w-4
+                            ${book['value'] === value ? "opacity-100" : "opacity-0"}
+                        `}
+                        />
+                        {value}
+                    </CommandItem>
+                ))}
+            </CommandGroup>
+          );
+        return options;
+    }, [book, handleChange]);
+
+    const getOptions = useCallback((e: string, func: () => { [key: string]: string | number }) => {
+        const options = (
+          <CommandGroup>
+            <ScrollArea className={`h-[300px]`}>
+            {Object.entries(func()).map(([key, value]) => (
+              <CommandItem
+                key={key}
+                value={key}
+                onSelect={() => handleChange(e, key)}
+                className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
+              >
+                <Check
+                  className={`
+                    mr-2 h-4 w-4
+                    ${book[e] === value ? "opacity-100" : "opacity-0"}
+                  `}
+                />
+                {value}
+              </CommandItem>
+            ))}
+            </ScrollArea>
+          </CommandGroup>
+        );
+      
+        return options;
+    }, [book, handleChange]);
+
 
     const bodyContent = (
         <Card>
@@ -85,15 +140,15 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
                     <Input
                         label="Select engraving book"
                         name="name"
-                        options={engravingOptions}
+                        options={getOptions('name', () => engravingOptions)}
                         onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={book.name}
+                        value={engravingOptions[book.name as string]}
                         required
                     />
                     <Input
                         label="Select level"
                         name="value"
-                        options={bookLevelOptions}
+                        options={bookLevelOptions()}
                         onChange={(e: string, v: string) => handleChange(e, v)}
                         value={book.value}
                         required

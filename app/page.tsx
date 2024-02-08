@@ -175,9 +175,9 @@ export default function Home() {
   return (
     <EngravingContext.Provider value={engravings}>
       <main className="flex min-h-screen md:w-[1500px] flex-col py-24">
-        <AddAccessory engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setAccessories)} />
-        <AddEngravingBook engravingOptions={engravingOptions} setItemData={(e) => setItemData(e, setBooks)} />
-        <AddAbilityStone engravingOptions={combatEngravingOptions} setItemData={(e) => setItemData(e, setStones)}/>
+        <AddAccessory setItemData={(e) => setItemData(e, setAccessories)} />
+        <AddEngravingBook setItemData={(e) => setItemData(e, setBooks)} />
+        <AddAbilityStone engravingOptions={combatEngravings} setItemData={(e) => setItemData(e, setStones)}/>
         <Flex gap="6" flexDirection="row" flex={1} marginBottom={6}>
           <Box gap="4" className="w-1/3">
             <ModalButton onClick={onAddAccessory} label='Add Accessory' />
@@ -200,7 +200,7 @@ export default function Home() {
                   label='Choose engravings'
                   description='Select the engravings/combat stats for your final build.'
                   inputLabel='Select engraving'
-                  options={engravingOptions} 
+                  options={engravings}
                   selected={desiredEngravings}
                   handleChange={(e: string, v: string) => handleEngravingChange(e, v)}
                   onClear={handleEngravingClear}
@@ -214,7 +214,7 @@ export default function Home() {
                   label='Choose combat stats'
                   description='Select the combat stats you prefer for each accessory in your final build.'
                   inputLabel='Select combat stat'
-                  options={combatStatOptions}
+                  options={getCombatStats()}
                   selected={desiredStats}
                   handleChange={(e: string, v: string) => handleStatChange(e, v)}
                   onClear={handleStatClear}
