@@ -7,4 +7,8 @@
 - Ability to categorize accessories per character
 - Show what is missing based off the desired build/inputted accessories
 - Ability to choose which engraving to prioritize at level 3
-- Ability to prioritize accessories to force the generator to use it in the final build
+- Ability to prioritize accessories/stones/books to force the generator to use it in the final build
+- Ability to add characters to filter ability stones
+
+## Issues
+When a dropdown is active, selecting the same value does not close the dropdown.

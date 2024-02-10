@@ -1,8 +1,8 @@
 'use client';
-import { getAccessoryTypes, getCombatStat, getCombatStats, getReduction, getType } from '../../libs/getItemData';
+import { getAccessoryTypes, getCombatStat, getCombatStats, getReduce, getReduction, getType } from '../../libs/getItemData';
 import SliderInput from "../SliderInput";
-import { Box, Flex, FormControl, Image, Text } from '@chakra-ui/react'
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Box, Flex, Image, Text } from '@chakra-ui/react'
+import { KeyboardEventHandler, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Input from "./Input";
 import { engravingLevels, getEngravingLevels } from '@/app/libs/getEngravingData';
 import { formatAccessory } from '@/app/utils/formatData';
@@ -18,6 +18,20 @@ import { Check } from 'lucide-react';
 import { CommandGroup, CommandItem } from '@/components/ui/command';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import EngravingContext from '@/app/contexts/EngravingContext';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { ZodType, z } from "zod"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Button } from '@/components/ui/button';
+import FormInput from '../form/FormInput';
 
 interface AddAccessoryProps  {
     setItemData: (e: any) => void;
@@ -28,20 +42,56 @@ type DataType = {
 }
 
 export interface AddAccessoryData {
-  uid: string;
+  uid?: number;
   combatOne: string,
-  combatTwo: string,
-  combatOneValue: number,
-  combatTwoValue: number,
+  combatTwo?: string,
+  combatOneValue: number | string,
+  combatTwoValue?: number | string,
   engravingOne: string,
   engravingTwo: string,
   engravingOneValue: number,
   engravingTwoValue: number,
   reduction: string,
-  reductionValue: number,
-  quality: number,
+  reductionValue:  number | string,
   type: string,
 }
+
+const FormSchema: ZodType<AddAccessoryData> = z.object({
+  uid: z.number().optional(),
+  combatOne: z.string({
+    required_error: "Please select a combat stat.",
+  }),
+  combatTwo: z.string({
+    required_error: "Please select a combat stat.",
+  }).optional(),
+  combatOneValue: z.number({
+    required_error: "Please select a value.",
+  }),
+  combatTwoValue: z.number({
+    required_error: "Please select a value.",
+  }).optional(),
+  engravingOne: z.string({
+    required_error: "Please select an engraving.",
+  }),
+  engravingTwo: z.string({
+    required_error: "Please select an engraving.",
+  }),
+  engravingOneValue: z.number({
+    required_error: "Please select a value.",
+  }),
+  engravingTwoValue: z.number({
+    required_error: "Please select a value.",
+  }),
+  reduction: z.string({
+    required_error: "Please select a reduction.",
+  }),
+  reductionValue: z.number({
+    required_error: "Please select a value.",
+  }),
+  type: z.string({
+    required_error: "Please select a type.",
+  }),
+})
   
   
 const AddAccessory: React.FC<AddAccessoryProps> = ({
@@ -50,55 +100,59 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   const engravingOptions = useContext(EngravingContext);
   const addAccessoryModal = useAddAccessoryModal();
   const { isEdit, item, index } = addAccessoryModal;
-  const dataInitialState: DataType = useMemo(() => {
-    return !isEdit && {
-      uid: 0,
-      combatOne: '',
-      combatTwo: '',
-      combatOneValue: '',
-      combatTwoValue: '',
-      engravingOne: '',
-      engravingTwo: '',
-      engravingOneValue: '',
-      engravingTwoValue: '',
-      reduction: '',
-      reductionValue: '',
-      quality: '',
-      type: '',
-    } 
-      ||
-    {
-      uid: item?.uid,
-      combatOne: item?.combatOne.name,
-      combatTwo: item?.combatTwo?.name,
-      combatOneValue: item?.combatOne.value,
-      combatTwoValue: item?.combatTwo?.value,
-      engravingOne: item?.engravingOne.name,
-      engravingTwo: item?.engravingTwo.name,
-      engravingOneValue: item?.engravingOne.value.toString(),
-      engravingTwoValue: item?.engravingTwo.value.toString(),
-      reduction: item?.reduction.name,
-      reductionValue: item?.reduction.value,
-      quality: item?.quality,
-      type: item?.type,
-    }
-  }, [item, isEdit]);
-
-  const [data, setData] = useState<DataType>(dataInitialState);
+  const form = useForm<AddAccessoryData>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      combatOneValue: 160,
+      combatTwoValue: 160,
+      reductionValue: 1,
+    },
+  })
+  const [stats, setStats] = useState({
+    min: 0,
+    max: 500,
+  });
   const [isLoading, setIsLoading] = useState(false);
-  
+
   useEffect(() => {
-    setData(dataInitialState);
-  }, [dataInitialState]);
+    setIsLoading(true);
+    const loadData = async () => {
+      const load = async () => {
+        if (item && typeof item !== 'undefined') {
+          form.setValue('type', item.type);
+          form.setValue('combatOne', item.combatOne.name);
+          form.setValue('combatTwo', item.combatTwo?.name);
+          form.setValue('combatOneValue', item.combatOne.value.toString());
+          form.setValue('combatTwoValue', item.combatTwo?.value.toString());
+          form.setValue('engravingOne', item.engravingOne.name);
+          form.setValue('engravingTwo', item.engravingTwo.name);
+          form.setValue('engravingOneValue', item.engravingOne.value);
+          form.setValue('engravingTwoValue', item.engravingTwo.value);
+          form.setValue('reduction', item.reduction.name);
+          form.setValue('reductionValue', item.reduction.value.toString());
+        }
+      }
+      await load()
+      .then(() => {
+        setIsLoading(false);
+      });
+    }
+
+    loadData();
+  }, [item, form]);
+
+
   
-  const handleChange = useCallback((e: string, v: string) => e !== 'type' ? setData({ ...data, [e]: v }) : setData({ ...dataInitialState, [e]: v }), [data, dataInitialState]);
+  // const handleChange = useCallback((e: string, v: string) => e !== 'type' ? setData({ ...data, [e]: v }) : setData({ ...dataInitialState, [e]: v }), [data, dataInitialState]);
+
+  const handleChange = useCallback((e: any, v: any) => {
+    const parsed = parseString(e, v);
+    form.setValue(e, parsed);
+  }, [form]);
 
   const handleSliderChange = (value: any, name: string) => {
     const parsed = parseString(name, value);
-    setData({
-      ...data,
-      [name]: parsed,
-    });
+    form.setValue(name as any, parsed);
   }
 
   const parseString = (e: any, v: any) => {
@@ -118,14 +172,14 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     return res;
   }
 
-  const handleSubmit = () => {
+  const onSubmit = (d: any) => {
     setIsLoading(true);
-    data.uid = Date.now();
+    if (!isEdit) d.uid = Date.now();
     const existingArrayString = localStorage.getItem('accessories');
     const existingArray = existingArrayString ? JSON.parse(existingArrayString) : [];
 
     //format data
-    const formattedAccessory = formatAccessory(data)
+    const formattedAccessory = formatAccessory(d)
     // Add new data to the array
     if (isEdit) {
       existingArray[index as number] = formattedAccessory;
@@ -142,127 +196,111 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   }
 
   const handleClear = () => {
-      setData({
-        uid: 0,
-        combatOne: '',
-        combatTwo: '',
-        combatOneValue: '',
-        combatTwoValue: '',
-        engravingOne: '',
-        engravingTwo: '',
-        engravingOneValue: '',
-        engravingTwoValue: '',
-        reduction: '',
-        reductionValue: '',
-        quality: '',
-        type: '',
-      });
+      form.reset();
   }
 
   const handleClose = () => {
-    setData(dataInitialState);
+    form.reset();
     addAccessoryModal.onClose();
   }
-
-  const getOptions = useCallback((e: string, func: () => { [key: string]: string | number }) => {
-      const options = (
-        <CommandGroup>
-          <ScrollArea className={`${e === 'engravingOne' || e === 'engravingTwo' ? 'h-[300px]' : ''}`}>
-          {Object.entries(func()).map(([key, value]) => (
-            <CommandItem
-              key={key}
-              value={value as string}
-              onSelect={() => handleChange(e, key)}
-              className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
-            >
-              <Check
-                className={`
-                  mr-2 h-4 w-4
-                  ${data[e] === value ? "opacity-100" : "opacity-0"}
-                `}
-              />
-              {value}
-            </CommandItem>
-          ))}
-          </ScrollArea>
-        </CommandGroup>
-      );
-    
-      return options;
-  }, [data, handleChange]);
-
-  let maxStat = 0;
-  let minStat = 100;
-  if (data.type === 'NECKLACE') {
-    minStat = 400;
-    maxStat = 500;
-  }
-  else if (data.type === 'EARRING') {
-    minStat = 240;
-    maxStat = 300;
-  }
-  else {
-    minStat = 160;
-    maxStat = 200;
-  }
-
 
   const description = addAccessoryModal.isEdit ? 
     'Edit this accessory from your character.' :
     'Add your accessories from your characters.'
   ;
 
-  const accessoryTypes = (
-    <Flex flexDirection='column'>
-      <Text fontSize='md' marginBottom={4}>Select accessory type.</Text>
-      <Flex gap={4} className='justify-between px-16'>
-        <Box 
-          tabIndex={0} 
-          className={`rounded-xl hover:cursor-pointer hover:scale-110 ease-out duration-300 border-2
-            ${data.type === 'NECKLACE' ? 'border-green-600' : ''}
-          `}
-          onClick={() => {
-            handleChange('type', 'NECKLACE');
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              handleChange('type', 'NECKLACE')
-            }
-          }}
-        >
-          <Image src='/images/necklace2_icon.webp' alt='Choose Necklace Icon' className='rounded-xl' />
-        </Box>
-        <Box 
-          tabIndex={0} 
-          className={`rounded-xl hover:cursor-pointer hover:scale-110 ease-out duration-300 border-2
-            ${data.type === 'EARRING' ? 'border-green-600' : ''}
-          `}
-          onClick={() => handleChange('type', 'EARRING')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              handleChange('type', 'EARRING')
-            }
-          }}
-        >
-          <Image src='/images/earrings2_icon.webp' alt='Choose Necklace Icon' className='rounded-xl' />
-        </Box>
-        <Box 
-          tabIndex={0} 
-          className={`rounded-xl hover:cursor-pointer hover:scale-110 ease-out duration-300 border-2
-            ${data.type === 'RING' ? 'border-green-600  ' : ''}
-          `}
-          onClick={() => handleChange('type', 'RING')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              handleChange('type', 'RING')
-            }
-          }}
-        >
-          <Image src='/images/ring2_icon.webp' alt='Choose Necklace Icon' className='rounded-xl' />        
-        </Box>
-      </Flex>
-    </Flex>
+  const values = form.watch();
+
+
+  useEffect(() => {
+    if (values.type === 'NECKLACE') {
+      setStats({
+        min: 400,
+        max: 500,
+      })
+    }
+    else if (values.type === 'EARRING') {
+      setStats({
+        min: 240,
+        max: 300,
+      })
+    }
+    else if (values.type === 'RING') {
+      setStats({
+        min: 160,
+        max: 200,
+      })
+    }
+  }, [values.type, form]);
+
+
+  const handleAccessoryChange = (v: string) => {
+    form.setValue('type', v);
+    if (v === 'NECKLACE') {
+      form.setValue('combatOneValue', 400);
+      form.setValue('combatTwoValue', 400);
+      setStats({
+        min: 400,
+        max: 500,
+      })
+    }
+    else if (v === 'EARRING') {
+      form.setValue('combatOneValue', 240);
+      setStats({
+        min: 240,
+        max: 300,
+      })
+    }
+    else if (v === 'RING') {
+      form.setValue('combatOneValue', 160);
+      setStats({
+        min: 160,
+        max: 200,
+      })
+    }
+  }
+
+  const AccessoryTypes = () => (
+    <FormField
+      control={form.control}
+      name="type"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Accessory Type</FormLabel>
+          <Flex flexDirection="column">
+            <Flex gap={4} className="justify-between px-16">
+              {['NECKLACE', 'EARRING', 'RING'].map((type) => (
+                <FormControl key={type}>
+                  <Box
+                    as="button"
+                    type="button"
+                    tabIndex={0}
+                    className={`rounded-xl hover:cursor-pointer hover:scale-110 ease-out duration-300 border-2
+                      ${field.value === type ? 'border-green-600' : ''}
+                    `}
+                    onClick={() => handleAccessoryChange(type)}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleAccessoryChange(type);
+                      }
+                    }}
+                  >
+                    <Image
+                      src={`/images/${type.toLowerCase()}2_icon.webp`}
+                      alt={`Choose ${type} Icon`}
+                      className="rounded-xl"
+                    />
+                  </Box>
+                </FormControl>
+              ))}
+            </Flex>
+            <FormMessage className='mt-2' />
+          </Flex>
+        </FormItem>
+      )}
+    />
   );
+
 
   const bodyContent = (
     <Card>
@@ -270,95 +308,103 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-          <Flex gap="4" flexDirection="column">
-            {accessoryTypes}
-          <Input 
-            label="Select combat stat"
-            name="combatOne"
-            options={getOptions('combatOne', getCombatStats)}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={getCombatStat(data.combatOne as string)}
-            required
-          />
-          <SliderInput 
-            max={maxStat} 
-            min={minStat}
-            name="combatOneValue"
-            value={data.combatOneValue}
-            onChange={handleSliderChange} 
-          />
-          {data.type === 'NECKLACE' && (
-            <>
-              <Input 
-                label="Select combat stat"
-                name="combatTwo"
-                options={getOptions('combatTwo', getCombatStats)}
-                onChange={(e: string, v: string) => handleChange(e, v)}
-                value={getCombatStat(data.combatTwo as string)}
-                required
-              />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <Flex gap="4" flexDirection="column">
+                <AccessoryTypes />
+                <FormInput 
+                  control={form.control}
+                  name='combatOne'
+                  label='Select combat stat'
+                  value={values.combatOne}
+                  handleChange={handleChange}
+                  getOptions={getCombatStats}
+                  getValue={getCombatStat}
+                />
+              
               <SliderInput 
-                max={maxStat} 
-                min={minStat}
-                name="combatTwoValue"
-                value={data.combatTwoValue}
+                max={stats.max} 
+                min={stats.min}
+                name="combatOneValue"
+                value={values.combatOneValue}
                 onChange={handleSliderChange} 
               />
-            </>
-          )}
-          <Input 
-            label="Select engraving"
-            name="engravingOne"
-            options={getOptions('engravingOne', () => engravingOptions)}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={engravingOptions[data.engravingOne as string]}
-            required
-          />
-          <Input
-              label="Select level"
-              name="engravingOneValue"
-              options={getOptions('engravingOneValue', getEngravingLevels)}
-              onChange={(e: string, v: string) => handleChange(e, v)}
-              value={data.engravingOneValue}
-              required
-          />
-          <Input 
-            label="Select engraving"
-            name="engravingTwo"
-            options={getOptions('engravingTwo', () => engravingOptions)}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={engravingOptions[data.engravingTwo as string]}
-            required
-          />
-          <Input
-              label="Select level"
-              name="engravingTwoValue"
-              options={getOptions('engravingTwoValue', getEngravingLevels)}
-              onChange={(e: string, v: string) => handleChange(e, v)}
-              value={data.engravingTwoValue}
-              required
-          />
-          <Input 
-            label="Select reduction"
-            name="reduction"
-            options={getOptions('reduction', getReduction)}
-            onChange={(e: string, v: string) => handleChange(e, v)}
-            value={data.reduction}
-            required
-          />
-          <SliderInput
-            min={1} 
-            max={3} 
-            name="reductionValue"
-            value={data.reductionValue}
-            onChange={handleSliderChange} 
-          />
-        </Flex>
+              {values.type === 'NECKLACE' && (
+                <>
+                <FormInput 
+                  control={form.control}
+                  name='combatTwo'
+                  label='Select combat stat'
+                  value={values.combatTwo}
+                  handleChange={handleChange}
+                  getOptions={getCombatStats}
+                  getValue={getCombatStat}
+                />
+                  <SliderInput 
+                    max={stats.max} 
+                    min={stats.min}
+                    name="combatTwoValue"
+                    value={values.combatTwoValue}
+                    onChange={handleSliderChange} 
+                  />
+                </>
+              )}
+              <FormInput 
+                  control={form.control}
+                  name='engravingOne'
+                  label='Select engraving 1'
+                  value={values.engravingOne}
+                  handleChange={handleChange}
+                  getOptions={() => engravingOptions}
+                  getValue={engravingOptions}
+              />
+              <FormInput 
+                  control={form.control}
+                  name='engravingOneValue'
+                  label='Select engraving 1 level'
+                  value={values.engravingOneValue}
+                  handleChange={handleChange}
+                  getOptions={getEngravingLevels}
+                  getValue={values.engravingOneValue}
+              />
+              <FormInput 
+                  control={form.control}
+                  name='engravingTwo'
+                  label='Select engraving 2'
+                  value={values.engravingTwo}
+                  handleChange={handleChange}
+                  getOptions={() => engravingOptions}
+                  getValue={engravingOptions}
+              />
+              <FormInput 
+                  control={form.control}
+                  name='engravingTwoValue'
+                  label='Select engraving 2 level'
+                  value={values.engravingTwoValue}
+                  handleChange={handleChange}
+                  getOptions={getEngravingLevels}
+                  getValue={values.engravingTwoValue}
+              />
+              <FormInput 
+                  control={form.control}
+                  name='reduction'
+                  label='Select reduction'
+                  value={values.reduction}
+                  handleChange={handleChange}
+                  getOptions={getReduction}
+                  getValue={getReduce}
+              />
+              <SliderInput
+                min={1} 
+                max={3} 
+                name="reductionValue"
+                value={values.reductionValue}
+                onChange={handleSliderChange} 
+              />
+            </Flex>
+          </form>
+        </Form>
       </CardContent>
-      {/* <CardFooter className="flex justify-between">
-        <ClearButton label='Clear' onClick={handleClear} />
-        <SubmitButton label='Add' onClick={handleSubmit} />
-      </CardFooter> */}
     </Card>
   );
 
@@ -369,7 +415,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
       <Modal
         isOpen={addAccessoryModal.isOpen}
         onClose={handleClose}
-        onSubmit={handleSubmit}
+        onSubmit={form.handleSubmit(onSubmit)}
         actionLabel="Edit"
         secondaryAction={handleClear}
         secondaryActionLabel='Clear'
@@ -384,7 +430,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     <Modal
       isOpen={addAccessoryModal.isOpen}
       onClose={handleClose}
-      onSubmit={handleSubmit}
+      onSubmit={form.handleSubmit(onSubmit)}
       actionLabel="Submit"
       secondaryAction={handleClear}
       secondaryActionLabel='Clear'

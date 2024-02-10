@@ -109,7 +109,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
             {Object.entries(func()).map(([key, value]) => (
               <CommandItem
                 key={key}
-                value={key}
+                value={value as string}
                 onSelect={() => handleChange(e, key)}
                 className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
               >

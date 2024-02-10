@@ -56,3 +56,20 @@ export interface Build {
     abilityStone: AbilityStone;
 }
 
+/** Form Data */
+
+export type AccessoryFormData = {
+    combatOne: string,
+    combatTwo: string,
+    combatOneValue: number,
+    combatTwoValue: number,
+    engravingOne: string,
+    engravingTwo: string,
+    engravingOneValue: number,
+    engravingTwoValue: number,
+    reduction: string,
+    reductionValue: number,
+    quality: number,
+    type: string,
+}
+

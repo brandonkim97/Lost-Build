@@ -26,6 +26,7 @@ import { getCombatStats } from './libs/getItemData';
 import SubmitButton from './components/buttons/SubmitButton';
 import { Separator } from "@/components/ui/separator";
 import List from './components/List';
+import PuffLoader from "react-spinners/PuffLoader";
 
 interface EngravingLevels {
   levels: { [key: string]: (string | number)[][] };
@@ -59,42 +60,67 @@ export default function Home() {
   const [books, setBooks] = useState([]);
   const [stones, setStones] = useState([]);
   const [showNoBuilds, setShowNoBuilds] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
 
   useEffect(() => {
-    //get accessories from local storage
-    const accessoryString = localStorage.getItem('accessories');
-    const accessoryArray = accessoryString ? JSON.parse(accessoryString) : [];
-
-    setAccessories(accessoryArray);
-
-    //get engraving books from local storage
-    const bookString = localStorage.getItem('engraving-book');
-    const bookArray = bookString ? JSON.parse(bookString) : [];
-
-    setBooks(bookArray);
-
-    //get ability stones from local storage
-    const stoneString = localStorage.getItem('ability-stones');
-    const stoneArray = stoneString ? JSON.parse(stoneString) : [];
-
-    setStones(stoneArray);
+    // Function to get data from local storage
+    const getDataFromLocalStorage = (key: string) => {
+      const dataString = localStorage.getItem(key);
+      return dataString ? JSON.parse(dataString) : [];
+    };
+  
+    // Array of local storage keys
+    const localStorageKeys = ['accessories', 'engraving-book', 'ability-stones'];
+  
+    // Use Promise.all to wait for all local storage operations
+    Promise.all(localStorageKeys.map(key => getDataFromLocalStorage(key)))
+      .then(([accessoryArray, bookArray, stoneArray]) => {
+        // Set state with the data obtained from local storage
+        setAccessories(accessoryArray);
+        setBooks(bookArray);
+        setStones(stoneArray);
+  
+        // Set loading to false after all operations are completed
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        // Handle errors if needed
+        console.error('Error fetching data:', error);
+        setIsLoading(false);
+      });
   }, []);
+
+  // const fetchData = useMemo(() => {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       const res = await fetch('/api/builds/', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({
+  //           accessories: accessories,
+  //           engravingBooks: books,
+  //           abilityStones: stones,
+  //           desiredEngravings: desiredEngravings,
+  //           combatStats: desiredStats,
+  //         })
+  //       })
+  //       const fetchedData = await res.json();
+  //       console.log('fetchedData: ', fetchedData);
+  //       resolve(fetchedData);
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //       reject(error);
+  //     }
+  //   });
+  // }, [accessories, books, desiredEngravings, desiredStats, stones]);
   
   const handleSubmit = useCallback(() => {
     const getBuilds = new Promise<void>(async (resolve, reject) => {
       try {
         setIsLoading(true);
-        // const query = new URLSearchParams({ 
-        //   data: JSON.stringify({
-        //     accessories: accessories,
-        //     engravingBooks: books,
-        //     abilityStones: stones,
-        //   }),
-        //   desiredEngravings: JSON.stringify(desiredEngravings),
-        // }).toString();
-        // const res = await fetch(`/api/builds?${query}`);
         const res = await fetch('/api/builds/', {
           method: 'POST',
           headers: {
@@ -155,6 +181,8 @@ export default function Home() {
   const setItemData: Function = (e: any, func: (e: any) => void): void => { func(e) }
 
   return (
+    <>
+    {isLoading ? <Loading /> :
     <EngravingContext.Provider value={engravings}>
       <main className="flex min-h-screen md:w-[1500px] flex-col py-24">
         <AddAccessory setItemData={(e) => setItemData(e, setAccessories)} />
@@ -277,5 +305,15 @@ export default function Home() {
         </Card>
       </main>
     </EngravingContext.Provider>
+    }
+    </>
   );
+}
+
+const Loading = () => {
+  return (
+      <Box className='absolute bg-black opacity-70 flex h-full w-full place-content-center items-center '>
+          <PuffLoader color="#ffffff" loading={true} className='opacity-100 z-50'/>
+      </Box>
+  )
 }

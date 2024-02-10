@@ -21,7 +21,7 @@ export function formatAccessory(acc: any) {
         },
         reduction: {
           name: acc.reduction,
-          value: acc.reductionValue
+          value: parseInt(acc.reductionValue, 10),
         },
         quality: acc.quality,
         type: acc.type

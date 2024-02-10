@@ -16,7 +16,7 @@ const SubmitButton: React.FC<IParams> = ({
     classes
 }) => {
     return (
-        <Button onClick={onClick} variant={variant ?? 'default'} disabled={disabled} className={classes}>
+        <Button type='submit' onClick={onClick} variant={variant ?? 'default'} disabled={disabled} className={classes}>
             {label}
         </Button>
     )

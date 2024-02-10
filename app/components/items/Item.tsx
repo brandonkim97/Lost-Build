@@ -16,7 +16,7 @@ const Item: React.FC<IParams> = ({
             image = '/images/necklace2_icon.webp';
             break;
         case 'EARRING':
-            image = '/images/earrings2_icon.webp';
+            image = '/images/earring2_icon.webp';
             break;
         case 'RING':
             image = '/images/ring2_icon.webp';
