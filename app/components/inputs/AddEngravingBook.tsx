@@ -19,6 +19,18 @@ import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check } from "lucide-react";
 import EngravingContext from "@/app/contexts/EngravingContext";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { ZodType, z } from "zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import FormInput from '../form/FormInput';
 
 interface AddEngravingBookProps  {
     setItemData: (e: any) => void;
@@ -28,42 +40,40 @@ type DataType = {
     [key: string]: string | number | undefined;
 }
 
+const FormSchema: ZodType<DataType> = z.object({
+    name: z.string({
+      required_error: "Please select an engraving book.",
+    }),
+    value: z.number({
+      required_error: "Please select a value.",
+    }),
+  })
+
 const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     setItemData,
 }) => {
     const engravingOptions = useContext(EngravingContext);
     const addEngravingBookModal = useAddEngravingBookModal();
     const { isEdit, item, index } = addEngravingBookModal;
-    const dataInitialState = useMemo(() => {
-        return !isEdit && {
-            name: '',
-            value: '',
-        }
-            ||
-        {
-            name: item?.name,
-            value: item?.value.toString(),
-        }
-    }, [item, isEdit]);
-    const [book, setBook] = useState<DataType>(dataInitialState)
+    const [isLoading, setIsLoading] = useState(false);
+    const form = useForm<DataType>({
+        resolver: zodResolver(FormSchema)
+      })
 
-    useEffect(() => {
-        setBook(dataInitialState);
-      }, [dataInitialState]);
-
-    const handleChange = useCallback((e: string, v: string) => setBook({ ...book, [e]: v }), [book]);
+    const handleChange = useCallback((e: any, v: any) => {
+        const parsed = e === 'value' ? parseInt(v, 10) : v;
+        form.setValue(e, parsed);
+    }, [form]);
 
     const handleClear = () => {
-        setBook({
-            name: '',
-            value: '',
-        });
+        form.reset();
     }
 
-    const handleSubmit = () => {
+    const onSubmit = (d: any) => {
+        setIsLoading(true);
         const bookString = localStorage.getItem('engraving-book');
         const bookArray = bookString ? JSON.parse(bookString) : [];
-        const formattedArray = formatBook(book);
+        const formattedArray = formatBook(d);
 
         if (isEdit) {
             bookArray[index as number] = formattedArray;
@@ -73,62 +83,12 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
 
         localStorage.setItem('engraving-book', JSON.stringify(bookArray));
         setItemData(bookArray);
-        setBook(dataInitialState);
         if (isEdit) addEngravingBookModal.onClose();
         handleClear();
+        setIsLoading(false);
     }
 
-    const bookLevelOptions = useCallback(() => {
-        const options = (
-            <CommandGroup>
-              {Object.entries(bookLevels).map(([key, value]) => (
-                    <CommandItem 
-                        key={key} 
-                        value={key}
-                        onSelect={() => handleChange('value', key)}
-                        className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
-                    >
-                        <Check
-                        className={`
-                            mr-2 h-4 w-4
-                            ${book['value'] === value ? "opacity-100" : "opacity-0"}
-                        `}
-                        />
-                        {value}
-                    </CommandItem>
-                ))}
-            </CommandGroup>
-          );
-        return options;
-    }, [book, handleChange]);
-
-    const getOptions = useCallback((e: string, func: () => { [key: string]: string | number }) => {
-        const options = (
-          <CommandGroup>
-            <ScrollArea className={`h-[300px]`}>
-            {Object.entries(func()).map(([key, value]) => (
-              <CommandItem
-                key={key}
-                value={value as string}
-                onSelect={() => handleChange(e, key)}
-                className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
-              >
-                <Check
-                  className={`
-                    mr-2 h-4 w-4
-                    ${book[e] === value ? "opacity-100" : "opacity-0"}
-                  `}
-                />
-                {value}
-              </CommandItem>
-            ))}
-            </ScrollArea>
-          </CommandGroup>
-        );
-      
-        return options;
-    }, [book, handleChange]);
-
+    const values = form.watch();
 
     const bodyContent = (
         <Card>
@@ -136,24 +96,30 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
                 <CardDescription>All your engraving books will be considered in the final builds.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Flex gap="4" flexDirection="column">
-                    <Input
-                        label="Select engraving book"
-                        name="name"
-                        options={getOptions('name', () => engravingOptions)}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={engravingOptions[book.name as string]}
-                        required
-                    />
-                    <Input
-                        label="Select level"
-                        name="value"
-                        options={bookLevelOptions()}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={book.value}
-                        required
-                    />
-                </Flex>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <Flex gap="4" flexDirection="column">
+                            <FormInput 
+                                control={form.control}
+                                name='name'
+                                label='Select engraving book'
+                                value={values.name}
+                                handleChange={handleChange}
+                                getOptions={() => engravingOptions}
+                                getValue={engravingOptions}
+                            />
+                            <FormInput 
+                                control={form.control}
+                                name='value'
+                                label='Select value'
+                                value={values.value}
+                                handleChange={handleChange}
+                                getOptions={() => bookLevels}
+                                getValue={values.value as number}
+                            />
+                        </Flex>
+                    </form>
+                </Form>
             </CardContent>
         </Card>
     );
@@ -164,7 +130,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
         <Modal
             isOpen={addEngravingBookModal.isOpen}
             onClose={addEngravingBookModal.onClose}
-            onSubmit={handleSubmit}
+            onSubmit={form.handleSubmit(onSubmit)}
             actionLabel="Submit"
             secondaryAction={handleClear}
             secondaryActionLabel='Clear'

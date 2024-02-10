@@ -14,7 +14,7 @@ interface IParams {
     max: number;
     name: string;
     value: any;
-    onChange: (e: number, v: string) => void;
+    onChange: (e: string, v: number) => void;
     noSlider?: boolean;
 }
 
@@ -38,7 +38,7 @@ const SliderInput: React.FC<IParams> = ({
             max={max} 
             keepWithinRange={true} 
             value={value} 
-            onChange={(e: any) => onChange(e, name)}
+            onChange={(v: any) => onChange(name, v)}
         >
           <NumberInputField />
           <NumberInputStepper>
@@ -49,7 +49,7 @@ const SliderInput: React.FC<IParams> = ({
         {!noSlider &&
             <Slider
                 value={[value]}
-                onValueChange={(e: any) => onChange(e, name)}
+                onValueChange={(v: any) => onChange(name, v)}
                 min={min}
                 max={max}
                 step={1}

@@ -1,10 +1,9 @@
 'use client';
-import { getAccessoryTypes, getCombatStat, getCombatStats, getReduce, getReduction, getType } from '../../libs/getItemData';
+import { getCombatStat, getCombatStats, getReduce, getReduction, getType } from '../../libs/getItemData';
 import SliderInput from "../SliderInput";
 import { Box, Flex, Image, Text } from '@chakra-ui/react'
-import { KeyboardEventHandler, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import Input from "./Input";
-import { engravingLevels, getEngravingLevels } from '@/app/libs/getEngravingData';
+import { useCallback, useContext, useEffect, useState } from "react";
+import { getEngravingLevels } from '@/app/libs/getEngravingData';
 import { formatAccessory } from '@/app/utils/formatData';
 import {
   Card,
@@ -14,9 +13,6 @@ import {
 } from "@/components/ui/card";
 import Modal from '../modals/Modal';
 import useAddAccessoryModal from '@/app/hooks/useAddAccessoryModal';
-import { Check } from 'lucide-react';
-import { CommandGroup, CommandItem } from '@/components/ui/command';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import EngravingContext from '@/app/contexts/EngravingContext';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -24,13 +20,11 @@ import { ZodType, z } from "zod"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Button } from '@/components/ui/button';
 import FormInput from '../form/FormInput';
 
 interface AddAccessoryProps  {
@@ -91,7 +85,7 @@ const FormSchema: ZodType<AddAccessoryData> = z.object({
   type: z.string({
     required_error: "Please select a type.",
   }),
-})
+});
   
   
 const AddAccessory: React.FC<AddAccessoryProps> = ({
@@ -150,10 +144,6 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     form.setValue(e, parsed);
   }, [form]);
 
-  const handleSliderChange = (value: any, name: string) => {
-    const parsed = parseString(name, value);
-    form.setValue(name as any, parsed);
-  }
 
   const parseString = (e: any, v: any) => {
     let res;
@@ -321,13 +311,12 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
                   getOptions={getCombatStats}
                   getValue={getCombatStat}
                 />
-              
               <SliderInput 
                 max={stats.max} 
                 min={stats.min}
                 name="combatOneValue"
                 value={values.combatOneValue}
-                onChange={handleSliderChange} 
+                onChange={handleChange} 
               />
               {values.type === 'NECKLACE' && (
                 <>
@@ -345,7 +334,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
                     min={stats.min}
                     name="combatTwoValue"
                     value={values.combatTwoValue}
-                    onChange={handleSliderChange} 
+                    onChange={handleChange} 
                   />
                 </>
               )}
@@ -399,7 +388,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
                 max={3} 
                 name="reductionValue"
                 value={values.reductionValue}
-                onChange={handleSliderChange} 
+                onChange={handleChange} 
               />
             </Flex>
           </form>

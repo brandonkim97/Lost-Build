@@ -1,20 +1,28 @@
 import Input from "./Input";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { stoneLevels } from "@/app/libs/getEngravingData";
-import { getReduction } from "@/app/libs/getItemData";
+import { getReduce, getReduction } from "@/app/libs/getItemData";
 import SliderInput from "../SliderInput";
 import { formatStones } from "@/app/utils/formatData";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import ClearButton from "../buttons/ClearButton";
-import SubmitButton from "../buttons/SubmitButton";
-import { SelectItem } from "@/components/ui/select";
 import { Flex } from "@chakra-ui/react";
 import useAddAbilityStoneModal from "@/app/hooks/useAddAbilityStoneModal";
 import Modal from "../modals/Modal";
 import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { ZodType, z } from "zod"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import FormInput from '../form/FormInput';
 
 interface AddAbilityStoneProps  {
     engravingOptions: { [key: string]: string };
@@ -34,47 +42,52 @@ export interface AddAbilityStoneData {
   reductionValue: number,
 }
 
+const FormSchema: ZodType<AddAbilityStoneData> = z.object({
+    engravingOne: z.string({
+      required_error: "Please select an engraving.",
+    }),
+    engravingTwo: z.string({
+      required_error: "Please select an engraving.",
+    }),
+    engravingOneValue: z.number({
+      required_error: "Please select a value.",
+    }),
+    engravingTwoValue: z.number({
+      required_error: "Please select a value.",
+    }),
+    reduction: z.string({
+      required_error: "Please select a reduction.",
+    }),
+    reductionValue: z.number({
+      required_error: "Please select a value.",
+    })
+  });
+
 const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     engravingOptions,
     setItemData
 }) => {
     const addAbilityStoneModal = useAddAbilityStoneModal();
     const { isEdit, item, index } = addAbilityStoneModal;
-    const dataInitialState = useMemo(() => {
-        return !isEdit && {
-            engravingOne: '',
-            engravingOneValue: '',
-            engravingTwo: '',
-            engravingTwoValue: '',
-            reduction: '',
+    const form = useForm<AddAbilityStoneData>({
+        resolver: zodResolver(FormSchema),
+        defaultValues: {
             reductionValue: 0,
-        } 
-            ||
-        {
-            engravingOne: item?.engravingOne.name,
-            engravingOneValue: item?.engravingOne.value.toString(),
-            engravingTwo: item?.engravingTwo.name,
-            engravingTwoValue: item?.engravingTwo.value.toString(),
-            reduction: item?.reduction.name,
-            reductionValue: item?.reduction.value.toString(),
         }
-    }, [item, isEdit]);
-    const [stone, setStone] = useState<DataType>(dataInitialState)
+    })
 
-    useEffect(() => {
-        setStone(dataInitialState);
-    }, [dataInitialState]);
+    // useEffect(() => {
+    //     setStone(dataInitialState);
+    // }, [dataInitialState]);
 
     
-    const handleChange = useCallback((e: string, v: string) => setStone({ ...stone, [e]: v}), [stone]);
+    // const handleChange = useCallback((e: string, v: string) => setStone({ ...stone, [e]: v}), [stone]);
 
-    const handleSliderChange = (value: any, name: string) => {
-        const parsed = parseString(name, value);
-        setStone({
-          ...stone,
-          [name]: parsed,
-        });
-    }
+    const handleChange = useCallback((e: any, v: any) => {
+        const parsed = parseString(e, v);
+        form.setValue(e, parsed);
+    }, [form]);
+
 
     const parseString = (e: any, v: any) => {
         let res;
@@ -92,31 +105,14 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     }
 
     const handleClear = () => {
-        setStone({
-            engravingOne: '',
-            engravingOneValue: '',
-            engravingTwo: '',
-            engravingTwoValue: '',
-            reduction: '',
-            reductionValue: 0,
-        } );
+        form.reset();
     }    
 
-    const isValid = () => {
-        return stone.engravingOne &&
-            stone.engravingOneValue && 
-            stone.engravingTwo &&
-            stone.engravingTwoValue &&
-            stone.reduction
-        ;
-    }
-
-    const handleSubmit = () => {
+    const onSubmit = (d: any) => {
         //add validation
-        if (!isValid()) return;
         const stoneString = localStorage.getItem('ability-stones');
         const stoneArray = stoneString ? JSON.parse(stoneString) : [];
-        const formattedStone = formatStones(stone);
+        const formattedStone = formatStones(d);
 
         if (isEdit) {
             stoneArray[index as number] = formattedStone;
@@ -126,37 +122,11 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
 
         localStorage.setItem('ability-stones', JSON.stringify(stoneArray));
         setItemData(stoneArray);
-        setStone(dataInitialState);
         if (isEdit) addAbilityStoneModal.onClose();
         handleClear();
     }
 
-    const getOptions = useCallback((e: string, func: () => { [key: string]: string | number }) => {
-        const options = (
-          <CommandGroup>
-            <ScrollArea className={`${e === 'engravingOne' || e === 'engravingTwo' ? 'h-[300px]' : ''}`}>
-            {Object.entries(func()).map(([key, value]) => (
-              <CommandItem
-                key={key}
-                value={value as string}
-                onSelect={() => handleChange(e, key)}
-                className='flex hover:cursor-pointer hover:bg-zinc-800 rounded-lg p-1 active:bg-zinc-800 focus:outline-none focus:bg-zinc-800'
-              >
-                <Check
-                  className={`
-                    mr-2 h-4 w-4
-                    ${stone[e] === value ? "opacity-100" : "opacity-0"}
-                  `}
-                />
-                {value}
-              </CommandItem>
-            ))}
-            </ScrollArea>
-          </CommandGroup>
-        );
-      
-        return options;
-    }, [stone, handleChange]);
+    const values = form.watch();
 
     const bodyContent = (
         <Card>
@@ -164,55 +134,80 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
                 <CardDescription>All your stones will be considered in the final builds.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Flex gap="4" flexDirection="column">
-                    <Input
-                        label="Select engraving"
-                        name="engravingOne"
-                        options={getOptions('engravingOne', () => engravingOptions)}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={engravingOptions[stone.engravingOne as string]}
-                        required
-                    />
-                    <Input
-                        label="Select level"
-                        name="engravingOneValue"
-                        options={getOptions('engravingOneValue', () => stoneLevels)}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={stone.engravingOneValue}
-                        required
-                    />
-                    <Input
-                        label="Select engraving"
-                        name="engravingTwo"
-                        options={getOptions('engravingTwo', () => engravingOptions)}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={engravingOptions[stone.engravingTwo as string]}
-                        required
-                    />
-                    <Input
-                        label="Select level"
-                        name="engravingTwoValue"
-                        options={getOptions('engravingTwoValue', () => stoneLevels)}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={stone.engravingTwoValue}
-                        required
-                    />
-                    <Input
-                        label="Select reduction"
-                        name="reduction"
-                        options={getOptions('reduction', getReduction)}
-                        onChange={(e: string, v: string) => handleChange(e, v)}
-                        value={getReduction()[stone.reduction as string]}
-                        required
-                    />
-                    <SliderInput
-                        min={0} 
-                        max={10} 
-                        name="reductionValue"
-                        value={stone.reductionValue}
-                        onChange={(e: any) => handleSliderChange(e, 'reductionValue')} 
-                    />
-                </Flex>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <Flex gap="4" flexDirection="column">
+                            {/* <Input
+                                label="Select engraving"
+                                name="engravingOne"
+                                options={getOptions('engravingOne', () => engravingOptions)}
+                                onChange={(e: string, v: string) => handleChange(e, v)}
+                                value={engravingOptions[stone.engravingOne as string]}
+                                required
+                            /> */}
+                            <FormInput 
+                                control={form.control}
+                                name='engravingOne'
+                                label='Select engraving'
+                                value={values.engravingOne}
+                                handleChange={handleChange}
+                                getOptions={() => engravingOptions}
+                                getValue={engravingOptions}
+                            />
+                            {/* <Input
+                                label="Select level"
+                                name="engravingOneValue"
+                                options={getOptions('engravingOneValue', () => stoneLevels)}
+                                onChange={(e: string, v: string) => handleChange(e, v)}
+                                value={stone.engravingOneValue}
+                                required
+                            /> */}
+                            <FormInput 
+                                control={form.control}
+                                name='engravingOneValue'
+                                label='Select level'
+                                value={values.engravingOneValue}
+                                handleChange={handleChange}
+                                getOptions={() => stoneLevels}
+                                getValue={values.engravingOneValue}
+                            />
+                            <FormInput 
+                                control={form.control}
+                                name='engravingTwo'
+                                label='Select engraving 2'
+                                value={values.engravingTwo}
+                                handleChange={handleChange}
+                                getOptions={() => engravingOptions}
+                                getValue={engravingOptions}
+                            />
+                            <FormInput 
+                                control={form.control}
+                                name='engravingTwoValue'
+                                label='Select level'
+                                value={values.engravingTwoValue}
+                                handleChange={handleChange}
+                                getOptions={() => stoneLevels}
+                                getValue={values.engravingTwoValue}
+                            />
+                            <FormInput 
+                                control={form.control}
+                                name='reduction'
+                                label='Select reduction'
+                                value={values.reduction}
+                                handleChange={handleChange}
+                                getOptions={getReduction}
+                                getValue={getReduce}
+                            />
+                            <SliderInput
+                                min={0} 
+                                max={10} 
+                                name="reductionValue"
+                                value={values.reductionValue}
+                                onChange={handleChange} 
+                            />
+                        </Flex>
+                    </form>
+                </Form>
             </CardContent>
         </Card>
     );
@@ -222,7 +217,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
             <Modal
                 isOpen={addAbilityStoneModal.isOpen}
                 onClose={addAbilityStoneModal.onClose}
-                onSubmit={handleSubmit}
+                onSubmit={form.handleSubmit(onSubmit)}
                 actionLabel="Edit"
                 secondaryAction={handleClear}
                 secondaryActionLabel='Clear'
@@ -236,7 +231,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         <Modal
             isOpen={addAbilityStoneModal.isOpen}
             onClose={addAbilityStoneModal.onClose}
-            onSubmit={handleSubmit}
+            onSubmit={form.handleSubmit(onSubmit)}
             actionLabel="Submit"
             secondaryAction={handleClear}
             secondaryActionLabel='Clear'
