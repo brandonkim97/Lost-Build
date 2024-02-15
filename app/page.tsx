@@ -77,15 +77,23 @@ const FormSchema: ZodType<BuildData> = z.object({
   desiredEngravings: z.object({
     engravingOne: z.string({
       required_error: "Please select an engraving.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select an engraving'
     }),
     engravingTwo: z.string({
       required_error: "Please select an engraving.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select an engraving'
     }),
     engravingThree: z.string({
       required_error: "Please select an engraving.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select an engraving'
     }),
     engravingFour: z.string({
       required_error: "Please select an engraving.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select an engraving'
     }),
     engravingFive: z.string(),
     engravingSix: z.string(),
@@ -93,21 +101,33 @@ const FormSchema: ZodType<BuildData> = z.object({
   desiredStats: z.object({
     necklaceOne: z.string({
       required_error: "Please select a stat.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select a combat stat'
     }),
     necklaceTwo: z.string({
       required_error: "Please select a stat.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select a combat stat'
     }),
     earringOne: z.string({
       required_error: "Please select a stat.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select a combat stat'
     }),
     earringTwo: z.string({
       required_error: "Please select a stat.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select a combat stat'
     }),
     ringOne: z.string({
       required_error: "Please select a stat.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select a combat stat'
     }),
     ringTwo: z.string({
       required_error: "Please select a stat.",
+    }).refine(data => data.trim() !== '', {
+      message: 'Please select a combat stat'
     }),
   }),
 });
@@ -116,24 +136,6 @@ export default function Home() {
   const addAccessoryModal = useAddAccessoryModal();
   const addEngravingBookModal = useAddEngravingBookModal();
   const addAbilityStoneModal = useAddAbilityStoneModal();
-  // const dataInitialState = {
-  //   engravingOne: '',
-  //   engravingTwo: '',
-  //   engravingThree: '',
-  //   engravingFour: '',
-  //   engravingFive: '',
-  //   engravingSix: '',
-  // };
-  // const statsInitialState = {
-  //   necklaceOne: '',
-  //   necklaceTwo: '',
-  //   earringOne: '',
-  //   earringTwo: '',
-  //   ringOne: '',
-  //   ringTwo: '',
-  // }
-  // const [desiredEngravings, setDesiredEngravings] = useState(dataInitialState);
-  // const [desiredStats, setDesiredStats] = useState(statsInitialState)
   const [builds, setBuilds] = useState<EngravingLevels[]>([]);
   const [accessories, setAccessories] = useState([]);
   const [books, setBooks] = useState([]);
@@ -184,41 +186,15 @@ export default function Home() {
         setBooks(bookArray);
         setStones(stoneArray);
   
-        // Set loading to false after all operations are completed
-        setIsLoading(false);
       })
       .catch((error) => {
         // Handle errors if needed
         console.error('Error fetching data:', error);
         setIsLoading(false);
+      }).finally(() => {
+        setIsLoading(false);
       });
   }, []);
-
-  // const fetchData = useMemo(() => {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       const res = await fetch('/api/builds/', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify({
-  //           accessories: accessories,
-  //           engravingBooks: books,
-  //           abilityStones: stones,
-  //           desiredEngravings: desiredEngravings,
-  //           combatStats: desiredStats,
-  //         })
-  //       })
-  //       const fetchedData = await res.json();
-  //       console.log('fetchedData: ', fetchedData);
-  //       resolve(fetchedData);
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error);
-  //       reject(error);
-  //     }
-  //   });
-  // }, [accessories, books, desiredEngravings, desiredStats, stones]);
   
   const handleSubmit = useCallback(() => {
     console.log('submtting...')
