@@ -1,8 +1,8 @@
-import { Box, Flex, Grid, GridItem, Image, Text } from "@chakra-ui/react"
+import { Box, Button, Flex, Grid, GridItem, Image, Text } from "@chakra-ui/react"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import React, { Suspense, useContext } from "react";
-import { AbilityStone, Accessory, Book } from "../types";
+import { AbilityStone, Accessory, Book, Favorites } from "../types";
 import EngravingContext from "../contexts/EngravingContext";
 import { getCombatStat, getReduce } from "../libs/getItemData";
 import useAddAccessoryModal from "../hooks/useAddAccessoryModal";
@@ -10,23 +10,44 @@ import useAddAbilityStoneModal from "../hooks/useAddAbilityStoneModal";
 import useAddEngravingBookModal from "../hooks/useAddEngravingBookModal";
 import { RemoveButton } from "./buttons/RemoveButton";
 import { EditButton } from "./buttons/EditButton";
-import { Card } from "@/components/ui/card";
+import { MdOutlineFavorite } from "react-icons/md";
+import { MdFavoriteBorder  } from "react-icons/md";
+import FavoriteContext from "../contexts/FavoriteContext";
+
 
 interface IParams {
     data: Accessory[] | Book[] | AbilityStone[];
     setItemData: (e: any) => void;
+    handleFavorites: (idx: number, type: string, item: Accessory | Book | AbilityStone) => void;
+    type: 'accessory' | 'book' | 'stone';
 }
 
-const ListContent: React.FC<IParams> = ({ data, setItemData }) => {
+const ListContent: React.FC<IParams> = ({ data, setItemData, handleFavorites, type }) => {
     const engravingContext = useContext(EngravingContext);
     const addAccessoryModal = useAddAccessoryModal();
     const addEngravingBookModal = useAddEngravingBookModal();
     const addAbilityStoneModal = useAddAbilityStoneModal();
+    const favorites = useContext(FavoriteContext);
 
     let mapContent;
 
+    const isFavorited = (item: Accessory | Book | AbilityStone, type: string, isAcc?: boolean) => {
+        if (isAcc) {
+            if (type === 'NECKLACE') {
+                return favorites.accessory?.necklace?.uid === item.uid;
+            } else if (type === 'EARRING'){
+                return favorites.accessory?.earrings.some(obj => obj.uid === item.uid);
+            } else {
+                return favorites.accessory?.rings.some(obj => obj.uid === item.uid);
+            }
+        } else if (type === 'stone') {
+            return favorites.stone?.uid === item.uid;
+        }
+        return (favorites[type as 'book'] as Book[])?.some(obj => obj.uid === item.uid);
+    }
+
     if (data && data.length) {
-        if ('uid' in data[0]) { //accessory
+        if (type === 'accessory') { //accessory
             const icon = {
                 'NECKLACE': '/images/necklace2_icon.webp',
                 'EARRING': '/images/earring2_icon.webp',
@@ -36,7 +57,15 @@ const ListContent: React.FC<IParams> = ({ data, setItemData }) => {
                 (data as Accessory[]).map((value, index) => (
                     <>
                         <Box key={value.uid}>
-                            {`${index+1}.`}
+                            <Flex className='justify-between items-center'>
+                                <Box>{`${index+1}.`}</Box>
+                                <Button variant='ghost' onClick={() => handleFavorites(index, value.type, value)}>
+                                    {isFavorited(value, value.type, true) ? 
+                                        <MdOutlineFavorite color='red' size={22} /> :
+                                        <MdFavoriteBorder size={22} />
+                                    }
+                                </Button>
+                            </Flex>
                             <Flex gap={4} className='items-center my-6'>
                                 <Box className='w-1/5'>
                                     <Image src={icon[value.type]} alt='Accessory Icon' className='rounded-lg' />
@@ -81,12 +110,20 @@ const ListContent: React.FC<IParams> = ({ data, setItemData }) => {
                     </>
                 ))
             );
-        } else if ('name' in data[0]) { //book
+        } else if (type === 'book') { //book
             mapContent = (
                 (data as Book[]).map((value, index) => (
                     <>
                         <Box key={`${value.name}-${index}`}>
-                            {`${index+1}.`}
+                            <Flex className='justify-between items-center'>
+                                <Box>{`${index+1}.`}</Box>
+                                <Button variant='ghost' onClick={() => handleFavorites(index, 'BOOK', value)}>
+                                    {isFavorited(value, 'book') ? 
+                                        <MdOutlineFavorite color='red' size={22} /> :
+                                        <MdFavoriteBorder size={22} />
+                                    }
+                                </Button>
+                            </Flex>
                             <Flex gap={4} className='items-center my-2'>
                                 <Box className='w-1/5'>
                                     <Image src='/images/Legendary_Engraving_Recipe_icon.webp' alt='Engraving Book Icon' className='rounded-lg' />
@@ -118,7 +155,15 @@ const ListContent: React.FC<IParams> = ({ data, setItemData }) => {
                 (data as AbilityStone[]).map((value, index) => (
                     <>  
                         <Box key={`${value.engravingOne.name}-${value.engravingTwo.name}-${index}`}>
-                            {`${index+1}.`}
+                            <Flex className='justify-between items-center'>
+                                <Box>{`${index+1}.`}</Box>
+                                <Button variant='ghost' onClick={() => handleFavorites(index, 'STONE', value)}>
+                                    {isFavorited(value, 'stone') ? 
+                                        <MdOutlineFavorite color='red' size={22} /> :
+                                        <MdFavoriteBorder size={22} />
+                                    }
+                                </Button>
+                            </Flex>
                             <Flex gap={2} className='items-center my-2'>
                                 <Box className='w-1/5'>
                                     <Image src='/images/ability_stone_icon.jpg' alt='Engraving Book Icon' className='rounded-lg' />

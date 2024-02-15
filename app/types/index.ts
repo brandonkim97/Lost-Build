@@ -14,6 +14,7 @@ export type Reduction = Stat & {
 };
 
 export interface Book extends Stat {
+    uid: number;
     value: 3 | 6 | 9 | 12;
 }
 
@@ -37,6 +38,7 @@ export type Ring = Accessory;
 /** STONE */
 
 export interface AbilityStone {
+    uid: number;
     engravingOne: Engraving;
     engravingTwo: Engraving;
     reduction: Reduction;
@@ -71,5 +73,17 @@ export type AccessoryFormData = {
     reductionValue: number,
     quality: number,
     type: string,
+}
+
+/** Favorites */
+
+export interface Favorites {
+    accessory: {
+      necklace: Necklace | null,
+      earrings: Earring[],
+      rings: Ring[],
+    };
+    book: Book[];
+    stone: AbilityStone | null;
 }
 

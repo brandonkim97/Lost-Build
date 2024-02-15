@@ -27,12 +27,13 @@ type DataType = {
 }
 
 export interface AddAbilityStoneData {
-  engravingOne: string,
-  engravingTwo: string,
-  engravingOneValue: number,
-  engravingTwoValue: number,
-  reduction: string,
-  reductionValue: number,
+    uid?: number;
+    engravingOne: string;
+    engravingTwo: string;
+    engravingOneValue: number;
+    engravingTwoValue: number;
+    reduction: string;
+    reductionValue: number;
 }
 
 const FormSchema: ZodType<AddAbilityStoneData> = z.object({
@@ -103,6 +104,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
 
     const onSubmit = (d: any) => {
         //add validation
+        if (!isEdit) d.uid = Date.now();
         const stoneString = localStorage.getItem('ability-stones');
         const stoneArray = stoneString ? JSON.parse(stoneString) : [];
         const formattedStone = formatStones(d);

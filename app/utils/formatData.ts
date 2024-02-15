@@ -57,6 +57,7 @@ export function formatAccessory(acc: any) {
 
 export function formatStones(stone: any) {
   return {
+    uid: stone.uid,
     engravingOne: {
       name: stone.engravingOne,
       value: parseInt(stone.engravingOneValue, 10)
@@ -74,6 +75,7 @@ export function formatStones(stone: any) {
 
 export function formatBook(book: any) {
   return {
+    uid: book.uid,
     name: book.name,
     value: parseInt(book.value, 10),
   }

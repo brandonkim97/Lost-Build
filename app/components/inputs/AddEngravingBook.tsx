@@ -41,6 +41,7 @@ type DataType = {
 }
 
 const FormSchema: ZodType<DataType> = z.object({
+    uid: z.number().optional(),
     name: z.string({
       required_error: "Please select an engraving book.",
     }),
@@ -71,6 +72,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
 
     const onSubmit = (d: any) => {
         setIsLoading(true);
+        if (!isEdit) d.uid = Date.now();
         const bookString = localStorage.getItem('engraving-book');
         const bookArray = bookString ? JSON.parse(bookString) : [];
         const formattedArray = formatBook(d);

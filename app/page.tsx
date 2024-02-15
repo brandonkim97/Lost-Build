@@ -3,7 +3,7 @@ import { Box, Button, Flex, FormControl, Text, Image } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import getMockData from "./utils/getMockData";
 import { combatEngravings, engravings } from "./libs/getEngravingData";
-import { Accessory, Build } from "./types";
+import { Accessory, Build, Favorites } from "./types";
 import Input from "./components/inputs/Input";
 import AddAccessory, { AddAccessoryData } from "./components/inputs/AddAccessory";
 import AddEngravingBook from "./components/inputs/AddEngravingBook";
@@ -31,6 +31,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { ZodIssueCode, ZodError, ZodRecord, ZodType, z } from "zod"
 import { Form } from "@/components/ui/form"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import FavoriteContext from './contexts/FavoriteContext';
 
 
 interface EngravingLevels {
@@ -140,6 +148,15 @@ export default function Home() {
   const [accessories, setAccessories] = useState([]);
   const [books, setBooks] = useState([]);
   const [stones, setStones] = useState([]);
+  const [favorites, setFavorites] = useState<Favorites>({
+    accessory: {
+      necklace: null,
+      earrings: [],
+      rings: [],
+    },
+    book: [],
+    stone: null,
+  });
   const [showNoBuilds, setShowNoBuilds] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
@@ -168,6 +185,7 @@ export default function Home() {
 
   const values = form.watch();
 
+
   useEffect(() => {
     // Function to get data from local storage
     const getDataFromLocalStorage = (key: string) => {
@@ -176,16 +194,22 @@ export default function Home() {
     };
   
     // Array of local storage keys
-    const localStorageKeys = ['accessories', 'engraving-book', 'ability-stones'];
+    const localStorageKeys = ['accessories', 'engraving-book', 'ability-stones', 'favorites'];
   
     // Use Promise.all to wait for all local storage operations
     Promise.all(localStorageKeys.map(key => getDataFromLocalStorage(key)))
-      .then(([accessoryArray, bookArray, stoneArray]) => {
+      .then(async ([accessoryArray, bookArray, stoneArray, favoriteArray]) => {
+
+        //TODO: DELETE
         // Set state with the data obtained from local storage
+        accessoryArray = await addUid('accessories', accessoryArray);
+        bookArray = await addUid('engraving-book', bookArray)
+        stoneArray = await addUid('ability-stones', stoneArray);
+
         setAccessories(accessoryArray);
         setBooks(bookArray);
         setStones(stoneArray);
-  
+        setFavorites(favoriteArray);
       })
       .catch((error) => {
         // Handle errors if needed
@@ -195,6 +219,23 @@ export default function Home() {
         setIsLoading(false);
       });
   }, []);
+
+  //TODO: DELETE
+  const addUid = (key: string, arr: any) => {
+    let counter = 0;
+    arr = arr.map((object: any) => {
+      const uid = `${Date.now()}${counter++}`;
+      if (!object.hasOwnProperty('uid')) {
+        object.uid = uid;
+      }
+      return object;
+    });
+
+    //update localStorage
+    localStorage.setItem(key, JSON.stringify(arr));
+
+    return arr;
+  }
   
   const handleSubmit = useCallback(() => {
     console.log('submtting...')
@@ -212,6 +253,7 @@ export default function Home() {
             abilityStones: stones,
             desiredEngravings: values.desiredEngravings,
             combatStats: values.desiredStats,
+            favorites: favorites,
           })
         })
         const fetchedData = await res.json();
@@ -274,8 +316,7 @@ export default function Home() {
   }, [addAbilityStoneModal]);
 
 
-  const setItemData: Function = (e: any, func: (e: any) => void): void => { func(e) }
-
+  const setItemData: Function = (e: any, func: (e: any) => void): void => func(e);
 
   return (
     <>
@@ -286,18 +327,35 @@ export default function Home() {
         <AddEngravingBook setItemData={(e) => setItemData(e, setBooks)} />
         <AddAbilityStone engravingOptions={combatEngravings} setItemData={(e) => setItemData(e, setStones)}/>
         <Flex gap="6" flexDirection="row" flex={1} marginBottom={6}>
-          <Box gap="4" className="w-1/3">
-            <ModalButton onClick={onAddAccessory} label='Add Accessory' />
-            <List data={accessories} setItemData={(e) => setItemData(e, setAccessories)} />
-          </Box>
-          <Box gap="4" className="w-1/3">
-            <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
-            <List data={books} setItemData={(e) => setItemData(e, setBooks)} />
-          </Box>
-          <Box gap="4" className="w-1/3">
-            <ModalButton onClick={onAddAbilityStone} label='Add ability stone' />
-            <List data={stones} setItemData={(e) => setItemData(e, setStones)} />
-          </Box>
+          <FavoriteContext.Provider value={favorites}>
+            <Box gap="4" className="w-1/3">
+              <ModalButton onClick={onAddAccessory} label='Add Accessory' />
+              <List 
+                data={accessories} 
+                setItemData={(e) => setItemData(e, setAccessories)}
+                setFavorite={(e) => setItemData(e, setFavorites)} 
+                type='accessory'
+              />
+            </Box>
+            <Box gap="4" className="w-1/3">
+              <ModalButton onClick={onAddEngravingBook} label='Add engraving book' />
+              <List 
+                data={books} 
+                setItemData={(e) => setItemData(e, setBooks)} 
+                setFavorite={(e) => setItemData(e, setFavorites)}
+                type='book'
+              />
+            </Box>
+            <Box gap="4" className="w-1/3">
+              <ModalButton onClick={onAddAbilityStone} label='Add ability stone' />
+              <List 
+                data={stones} 
+                setItemData={(e) => setItemData(e, setStones)} 
+                setFavorite={(e) => setItemData(e, setFavorites)}
+                type='stone'
+              />
+            </Box>
+          </FavoriteContext.Provider>
         </Flex>
         <Card className='border'>
           <Flex flexDirection='column'>
@@ -355,38 +413,46 @@ export default function Home() {
             </Form>
             <Box>
               {builds.length > 0 && (
-                <>
-                  <Box className='px-6 py-4'>
-                    <Separator orientation="horizontal" />
-                  </Box>
-                  <Flex p={6}>
-                    <Box className='w-3/4'>
-                      <ScrollArea className="h-[600px] pr-4">
-                        {builds.length && builds[0].levels.three.map((item, index) => (
-                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
-                        ))}
-                        {builds.length && builds[0].levels.two.map((item, index) => (
-                          <Box key={index}>
-                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                <Carousel>
+                  <CarouselContent>
+                    {builds.map((build, index) => (
+                      <CarouselItem key={index}>
+                        <Box className='px-6 py-4'>
+                          <Separator orientation="horizontal" />
+                        </Box>
+                        <Flex p={6}>
+                          <Box className='w-3/4'>
+                            <ScrollArea className="h-[600px] pr-4">
+                              {build.levels.three.map((item, index) => (
+                                  <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                              ))}
+                              {build.levels.two.map((item, index) => (
+                                <Box key={index}>
+                                  <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                                </Box>
+                              ))}
+                              {build.levels.one.map((item, index) => (
+                                <Box key={index}>
+                                  <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                                </Box>
+                              ))}
+                              {build.levels.zero.map((item, index) => (
+                                <Box key={index}>
+                                  <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
+                                </Box>
+                              ))}
+                            </ScrollArea>
                           </Box>
-                        ))}
-                        {builds.length && builds[0].levels.one.map((item, index) => (
-                          <Box key={index}>
-                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
-                          </Box>
-                        ))}
-                        {builds.length && builds[0].levels.zero.map((item, index) => (
-                          <Box key={index}>
-                            <EngravingLine engraving={item[0] as string} value={item[1] as number} key={index} />
-                          </Box>
-                        ))}
-                      </ScrollArea>
-                    </Box>
-                    <Flex flexDirection='column' className="w-1/4 px-4 text-center">
-                      <ItemList build={builds[0].build} />
-                    </Flex>
-                  </Flex>
-                </>
+                          <Flex flexDirection='column' className="w-1/4 px-4 text-center">
+                            <ItemList build={build.build} />
+                          </Flex>
+                        </Flex>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
                 )}
                 {!builds.length && showNoBuilds && (
                   <>
