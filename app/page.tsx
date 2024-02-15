@@ -199,11 +199,7 @@ export default function Home() {
     Promise.all(localStorageKeys.map(key => getDataFromLocalStorage(key)))
       .then(async ([accessoryArray, bookArray, stoneArray, favoriteArray]) => {
 
-        //TODO: DELETE
         // Set state with the data obtained from local storage
-        accessoryArray = await addUid('accessories', accessoryArray);
-        bookArray = await addUid('engraving-book', bookArray)
-        stoneArray = await addUid('ability-stones', stoneArray);
 
         setAccessories(accessoryArray);
         setBooks(bookArray);
@@ -218,23 +214,6 @@ export default function Home() {
         setIsLoading(false);
       });
   }, []);
-
-  //TODO: DELETE
-  const addUid = (key: string, arr: any) => {
-    let counter = 0;
-    arr = arr.map((object: any) => {
-      const uid = `${Date.now()}${counter++}`;
-      if (!object.hasOwnProperty('uid')) {
-        object.uid = uid;
-      }
-      return object;
-    });
-
-    //update localStorage
-    localStorage.setItem(key, JSON.stringify(arr));
-
-    return arr;
-  }
   
   const handleSubmit = useCallback(() => {
     console.log('submtting...')
