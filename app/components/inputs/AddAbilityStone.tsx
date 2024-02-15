@@ -14,14 +14,7 @@ import { Check } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { ZodType, z } from "zod"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Form } from "@/components/ui/form"
 import FormInput from '../form/FormInput';
 
 interface AddAbilityStoneProps  {
@@ -61,7 +54,7 @@ const FormSchema: ZodType<AddAbilityStoneData> = z.object({
     reductionValue: z.number({
       required_error: "Please select a value.",
     })
-  });
+});
 
 const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     engravingOptions,
@@ -74,7 +67,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         defaultValues: {
             reductionValue: 0,
         }
-    })
+    });
 
     // useEffect(() => {
     //     setStone(dataInitialState);
@@ -137,14 +130,6 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <Flex gap="4" flexDirection="column">
-                            {/* <Input
-                                label="Select engraving"
-                                name="engravingOne"
-                                options={getOptions('engravingOne', () => engravingOptions)}
-                                onChange={(e: string, v: string) => handleChange(e, v)}
-                                value={engravingOptions[stone.engravingOne as string]}
-                                required
-                            /> */}
                             <FormInput 
                                 control={form.control}
                                 name='engravingOne'
@@ -154,14 +139,6 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
                                 getOptions={() => engravingOptions}
                                 getValue={engravingOptions}
                             />
-                            {/* <Input
-                                label="Select level"
-                                name="engravingOneValue"
-                                options={getOptions('engravingOneValue', () => stoneLevels)}
-                                onChange={(e: string, v: string) => handleChange(e, v)}
-                                value={stone.engravingOneValue}
-                                required
-                            /> */}
                             <FormInput 
                                 control={form.control}
                                 name='engravingOneValue'

@@ -46,14 +46,12 @@ interface InputProps {
     value?: any;
     disabled?: boolean;
     errors?: any;
-    register?: any;
 }
 
 const Input: React.FC<InputProps> = ({
     label,
     options,
     value,
-    register,
 }) => {
     const [open, setOpen] = useState(false)
 

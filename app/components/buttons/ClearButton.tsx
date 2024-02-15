@@ -12,7 +12,7 @@ const ClearButton: React.FC<IParams> = ({
     disabled,
 }) => {
     return (
-        <Button variant='outline' onClick={onClick} disabled={disabled}>{label}</Button>
+        <Button type='button' variant='outline' onClick={onClick} disabled={disabled}>{label}</Button>
     )
 }
 

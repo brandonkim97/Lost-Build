@@ -23,7 +23,6 @@ const FormInput: React.FC<IParams> = ({
   getValue,
 }) => {
   const options = useOptions(name, value, getOptions, handleChange);
-
   const func = (v: string) => {
     if (typeof getValue === 'function') {
       return getValue(v);

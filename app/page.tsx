@@ -27,34 +27,113 @@ import SubmitButton from './components/buttons/SubmitButton';
 import { Separator } from "@/components/ui/separator";
 import List from './components/List';
 import PuffLoader from "react-spinners/PuffLoader";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { ZodIssueCode, ZodError, ZodRecord, ZodType, z } from "zod"
+import { Form } from "@/components/ui/form"
+
 
 interface EngravingLevels {
   levels: { [key: string]: (string | number)[][] };
   build: Build;
 }
 
+export interface BuildData {
+    desiredEngravings: {
+      engravingOne: string;
+      engravingTwo: string;
+      engravingThree: string;
+      engravingFour: string;
+      engravingFive?: string;
+      engravingSix?: string;
+    };
+    desiredStats: {
+      necklaceOne: string;
+      necklaceTwo: string;
+      earringOne: string;
+      earringTwo: string;
+      ringOne: string;
+      ringTwo: string;
+    };
+}
+
+type FieldPath =
+  | 'desiredEngravings'
+  | 'desiredStats'
+  | 'desiredEngravings.engravingOne'
+  | 'desiredEngravings.engravingTwo'
+  | 'desiredEngravings.engravingThree'
+  | 'desiredEngravings.engravingFour'
+  | 'desiredEngravings.engravingFive'
+  | 'desiredEngravings.engravingSix'
+  | 'desiredStats.necklaceOne'
+  | 'desiredStats.necklaceTwo'
+  | 'desiredStats.earringOne'
+  | 'desiredStats.earringTwo'
+  | 'desiredStats.ringOne'
+  | 'desiredStats.ringTwo';
+
+const FormSchema: ZodType<BuildData> = z.object({
+  desiredEngravings: z.object({
+    engravingOne: z.string({
+      required_error: "Please select an engraving.",
+    }),
+    engravingTwo: z.string({
+      required_error: "Please select an engraving.",
+    }),
+    engravingThree: z.string({
+      required_error: "Please select an engraving.",
+    }),
+    engravingFour: z.string({
+      required_error: "Please select an engraving.",
+    }),
+    engravingFive: z.string(),
+    engravingSix: z.string(),
+  }),
+  desiredStats: z.object({
+    necklaceOne: z.string({
+      required_error: "Please select a stat.",
+    }),
+    necklaceTwo: z.string({
+      required_error: "Please select a stat.",
+    }),
+    earringOne: z.string({
+      required_error: "Please select a stat.",
+    }),
+    earringTwo: z.string({
+      required_error: "Please select a stat.",
+    }),
+    ringOne: z.string({
+      required_error: "Please select a stat.",
+    }),
+    ringTwo: z.string({
+      required_error: "Please select a stat.",
+    }),
+  }),
+});
+
 export default function Home() {
   const addAccessoryModal = useAddAccessoryModal();
   const addEngravingBookModal = useAddEngravingBookModal();
   const addAbilityStoneModal = useAddAbilityStoneModal();
-  const dataInitialState = {
-    engravingOne: '',
-    engravingTwo: '',
-    engravingThree: '',
-    engravingFour: '',
-    engravingFive: '',
-    engravingSix: '',
-  };
-  const statsInitialState = {
-    necklaceOne: '',
-    necklaceTwo: '',
-    earringOne: '',
-    earringTwo: '',
-    ringOne: '',
-    ringTwo: '',
-  }
-  const [desiredEngravings, setDesiredEngravings] = useState(dataInitialState);
-  const [desiredStats, setDesiredStats] = useState(statsInitialState)
+  // const dataInitialState = {
+  //   engravingOne: '',
+  //   engravingTwo: '',
+  //   engravingThree: '',
+  //   engravingFour: '',
+  //   engravingFive: '',
+  //   engravingSix: '',
+  // };
+  // const statsInitialState = {
+  //   necklaceOne: '',
+  //   necklaceTwo: '',
+  //   earringOne: '',
+  //   earringTwo: '',
+  //   ringOne: '',
+  //   ringTwo: '',
+  // }
+  // const [desiredEngravings, setDesiredEngravings] = useState(dataInitialState);
+  // const [desiredStats, setDesiredStats] = useState(statsInitialState)
   const [builds, setBuilds] = useState<EngravingLevels[]>([]);
   const [accessories, setAccessories] = useState([]);
   const [books, setBooks] = useState([]);
@@ -62,6 +141,30 @@ export default function Home() {
   const [showNoBuilds, setShowNoBuilds] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
+
+  const form = useForm<BuildData>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      desiredEngravings: {
+        engravingOne: '',
+        engravingTwo: '',
+        engravingThree: '',
+        engravingFour: '',
+        engravingFive: '',
+        engravingSix: '',
+      },
+      desiredStats: {
+        necklaceOne: '',
+        necklaceTwo: '',
+        earringOne: '',
+        earringTwo: '',
+        ringOne: '',
+        ringTwo: '',
+      },
+    }
+  });
+
+  const values = form.watch();
 
   useEffect(() => {
     // Function to get data from local storage
@@ -118,6 +221,7 @@ export default function Home() {
   // }, [accessories, books, desiredEngravings, desiredStats, stones]);
   
   const handleSubmit = useCallback(() => {
+    console.log('submtting...')
     const getBuilds = new Promise<void>(async (resolve, reject) => {
       try {
         setIsLoading(true);
@@ -130,8 +234,8 @@ export default function Home() {
             accessories: accessories,
             engravingBooks: books,
             abilityStones: stones,
-            desiredEngravings: desiredEngravings,
-            combatStats: desiredStats,
+            desiredEngravings: values.desiredEngravings,
+            combatStats: values.desiredStats,
           })
         })
         const fetchedData = await res.json();
@@ -152,17 +256,33 @@ export default function Home() {
       error: { title: 'Oops, something went wrong!', description: 'Please try again later.', duration: 3000, isClosable: true },
       loading: { title: 'Generating builds...', description: 'Please wait.' },
     });
-  }, [accessories, books, stones, desiredEngravings, toast, desiredStats]);  
+  }, [accessories, books, stones, values.desiredEngravings, toast, values.desiredStats]);  
 
-  const handleEngravingChange = (e: string, v: string) => setDesiredEngravings({ ...desiredEngravings, [e]: v});
-  const handleStatChange = (e: string, v: string) => setDesiredStats({ ...desiredStats, [e]: v});
+  const handleEngravingChange = (e: string, v: string) => {
+    form.setValue(e as FieldPath, v);
+  }
+  const handleStatChange = (e: string, v: string) => {
+    form.setValue(e as FieldPath, v);
+  }
 
   const handleEngravingClear = () => {
-    setDesiredEngravings(dataInitialState);
+    const engravingFields: (keyof BuildData['desiredEngravings'])[] = ['engravingOne', 'engravingTwo', 'engravingThree', 'engravingFour', 'engravingFive', 'engravingSix'];
+
+    const resetValues = Object.fromEntries(
+      engravingFields.map((field) => [field, ''])
+    );
+  
+    form.reset({ desiredEngravings: resetValues, desiredStats: values.desiredStats });
   }
 
   const handleStatClear = () => {
-    setDesiredStats(statsInitialState);
+    const statFields: (keyof BuildData['desiredStats'])[] = ['necklaceOne', 'necklaceTwo', 'earringOne', 'earringTwo', 'ringOne', 'ringTwo'];
+
+    const resetValues = Object.fromEntries(
+      statFields.map((field) => [field, ''])
+    );
+  
+    form.reset({ desiredEngravings: values.desiredEngravings, desiredStats: resetValues });
   }
 
   const onAddAccessory = useCallback(() => {
@@ -179,6 +299,7 @@ export default function Home() {
 
 
   const setItemData: Function = (e: any, func: (e: any) => void): void => { func(e) }
+
 
   return (
     <>
@@ -204,48 +325,58 @@ export default function Home() {
         </Flex>
         <Card className='border'>
           <Flex flexDirection='column'>
-            <Flex>
-              <Box>
-                <SelectBuild 
-                  label='Choose engravings'
-                  description='Select the engravings/combat stats for your final build.'
-                  inputLabel='Select engraving'
-                  options={engravings}
-                  selected={desiredEngravings}
-                  handleChange={(e: string, v: string) => handleEngravingChange(e, v)}
-                  onClear={handleEngravingClear}
-                />
-              </Box>
-              <Box className='py-6'>
-                <Separator orientation="vertical" />
-              </Box>
-              <Box>
-              <SelectBuild 
-                  label='Choose combat stats'
-                  description='Select the combat stats you prefer for each accessory in your final build.'
-                  inputLabel='Select combat stat'
-                  options={getCombatStats()}
-                  selected={desiredStats}
-                  handleChange={(e: string, v: string) => handleStatChange(e, v)}
-                  onClear={handleStatClear}
-                />
-              </Box>
-              <Box className='py-6'>
-                <Separator orientation="vertical" />
-              </Box>
-              <Box className='flex flex-col grow' p={6}>
-                <Box className='self-center' maxW="300px">
-                  <Text fontSize='3xl' className='self-start' >Note:</Text>
-                  <Text fontSize='sm'>
-                    Some of your preferred builds may not be generated if the necessary accessories are not available. 
-                    This generator will only show the best possible build with the acessories you provide it.
-                  </Text>
-                </Box>
-                <Box className='flex grow top-0 content-end flex-wrap justify-end'>
-                  <SubmitButton label='Generate' onClick={handleSubmit} classes='w-full' />
-                </Box>
-              </Box>
-            </Flex>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <Flex>
+                  <Box>
+                    <SelectBuild 
+                      label='Choose engravings'
+                      description='Select the engravings/combat stats for your final build.'
+                      inputLabel='Select engraving'
+                      options={engravings}
+                      selected={values.desiredEngravings}
+                      handleChange={(e: string, v: string) => handleEngravingChange(e, v)}
+                      onClear={handleEngravingClear}
+                      form={form}
+                      values={values.desiredEngravings}
+                      type='desiredEngravings'
+                    />
+                  </Box>
+                  <Box className='py-6'>
+                    <Separator orientation="vertical" />
+                  </Box>
+                  <Box>
+                  <SelectBuild 
+                      label='Choose combat stats'
+                      description='Select the combat stats you prefer for each accessory in your final build.'
+                      inputLabel='Select combat stat'
+                      options={getCombatStats()}
+                      selected={values.desiredStats}
+                      handleChange={(e: string, v: string) => handleStatChange(e, v)}
+                      onClear={handleStatClear}
+                      form={form}
+                      values={values.desiredStats}
+                      type='desiredStats'
+                    />
+                  </Box>
+                  <Box className='py-6'>
+                    <Separator orientation="vertical" />
+                  </Box>
+                  <Box className='flex flex-col grow' p={6}>
+                    <Box className='self-center' maxW="300px">
+                      <Text fontSize='3xl' className='self-start' >Note:</Text>
+                      <Text fontSize='sm'>
+                        Some of your preferred builds may not be generated if the necessary accessories are not available. 
+                        This generator will only show the best possible build with the acessories you provide it.
+                      </Text>
+                    </Box>
+                    <Box className='flex grow top-0 content-end flex-wrap justify-end'>
+                      <SubmitButton label='Generate' onClick={form.handleSubmit(handleSubmit)} classes='w-full' />
+                    </Box>
+                  </Box>
+                </Flex>
+              </form>
+            </Form>
             <Box>
               {builds.length > 0 && (
                 <>

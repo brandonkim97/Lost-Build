@@ -11,10 +11,21 @@ const useOptions = (
     handleChange: (e: any, v: any) => void,
     field?: any,
 ) => {
+    const isScrollable = (e: string) => [
+      'engravingOne', 
+      'engravingTwo', 
+      'desiredEngravings.engravingOne',
+      'desiredEngravings.engravingTwo',
+      'desiredEngravings.engravingThree',
+      'desiredEngravings.engravingFour',
+      'desiredEngravings.engravingFive',
+      'desiredEngravings.engravingSix',
+    ].includes(e);
+
     const getOptions = useCallback((e: string, func: () => { [key: string]: string | number }, field?: any) => {
         const options = (
           <CommandGroup>
-            <ScrollArea className={`${e === 'engravingOne' || e === 'engravingTwo' ? 'h-[300px]' : ''}`}>
+            <ScrollArea className={`${isScrollable(e) ? 'h-[300px]' : ''}`}>
             {Object.entries(func()).map(([key, v]) => (
               <CommandItem
                 key={key}
