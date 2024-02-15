@@ -1,7 +1,6 @@
 'use client';
 import { Box, Button, Flex, FormControl, Text, Image } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
-import getMockData from "./utils/getMockData";
 import { combatEngravings, engravings } from "./libs/getEngravingData";
 import { Accessory, Build, Favorites } from "./types";
 import Input from "./components/inputs/Input";
