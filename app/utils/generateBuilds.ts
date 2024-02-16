@@ -1,5 +1,6 @@
 import { isReduction } from "../libs/getItemData";
-import { AbilityStone, Accessory, Build, Engraving, Favorites, Necklace } from "../types";
+import { AbilityStone, Accessory, Book, Build, Engraving, Favorites, Necklace } from "../types";
+import _ from 'lodash';
 require('dotenv').config();
 
 interface DataParams {
@@ -46,8 +47,12 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
         return Object.values(desiredEngravings).includes(value.engravingOne.name) ||
             Object.values(desiredEngravings).includes(value.engravingTwo.name)
     });
+
     //generate all engraving book pairs
-    let bookPairs = generateBookPairs(filteredBooks);
+    const bookPairs = generateBookPairs(filteredBooks, data.favorites.book);
+
+    //get stone preferences
+    const preferredStones = generateStonePreference(filteredStones, data.favorites.stone);
 
     // console.log(bookPairs)
     const allStatReqs = getAllStatReqs(data.combatStats);
@@ -59,17 +64,24 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
             message: 'Your favorites do not match your preferred combat stats! Please try again.',
             data: [],
         };
-     } 
+    } 
+
+    //get stat requirements with regards to favorites
+    const reqs = getReqs(allStatReqs, data.favorites.accessory);
+
+    const currentBuildWithFavorites = getCurrentBuildWithFavorites(data.favorites.accessory);
 
     //create builds
     const unique = new Set<string>;
     for (const pair of bookPairs) {
-        for (const stone of filteredStones) {
+        for (const stone of preferredStones) {
+            const reqsCopy = _.cloneDeep(reqs);
+            const buildCopy = _.cloneDeep(currentBuildWithFavorites);
             await generateCombination(
                 0,
-                { ...allStatReqs },
+                reqsCopy,
                 filteredAccessories,
-                [],
+                buildCopy,
                 builds,
                 unique,
                 pair,
@@ -145,17 +157,31 @@ function generateCombination(
     }
 }
 
-function generateBookPairs(b: Engraving[]) {
+function generateBookPairs(b: Engraving[], books: Book[]) {
     const pairs = [];
-    for (let i = 0; i < b.length; i++) {
-        pairs.push([b[i], b[i]]);
-        for (let j = i + 1; j < b.length; j++) {
-            pairs.push([b[i], b[j]]);
+    if (books.length === 2) {
+        pairs.push([books[0], books[1]]);
+    } else if (books.length === 1) {
+        for (let i = 0; i < b.length; i++) {
+            pairs.push([b[i], books[0]]);
+        }
+    } else {
+        for (let i = 0; i < b.length; i++) {
+            pairs.push([b[i], b[i]]);
+            for (let j = i + 1; j < b.length; j++) {
+                pairs.push([b[i], b[j]]);
+            }
         }
     }
 
     return pairs;
 }
+
+function generateStonePreference(s: AbilityStone[], stone: AbilityStone | null) {
+    return stone === null ? s : [stone];
+}
+
+
 
 function createBuild(acc: Accessory[], pair: Engraving[], stone: AbilityStone) {
     const build: any = {};
@@ -283,7 +309,6 @@ const isFavoritesValid = (
 
     //validate earring
     favorites.earrings.forEach((item) => {
-        console.log(item.combatOne.name, count.EARRING[item.combatOne.name], !count.EARRING[item.combatOne.name])
         if (count.EARRING[item.combatOne.name] === 0) {
             valid = false;
         }
@@ -291,12 +316,55 @@ const isFavoritesValid = (
 
     //validate ring
     favorites.rings.forEach((item) => {
-        console.log(item.combatOne.name, count.RING[item.combatOne.name], !count.RING[item.combatOne.name])
         if (count.RING[item.combatOne.name] === 0) valid = false;
     });
 
     //valid
     return valid;
+}
+
+const getCurrentBuildWithFavorites = (
+    favorites: {
+        necklace: Accessory | null;
+        earrings: Accessory[];
+        rings: Accessory[];
+    }
+) => {
+    const build: Accessory[] = [];
+    if (favorites.necklace !== null) build.push(favorites.necklace);
+    favorites.earrings.forEach((item) => build.push(item));
+    favorites.rings.forEach((item) => build.push(item));
+    return build;
+}
+
+const getReqs = (
+    reqs: Count,
+    favorites: {
+        necklace: Accessory | null;
+        earrings: Accessory[];
+        rings: Accessory[];
+    },
+) => {
+    const count = _.cloneDeep(reqs);
+    //check necklace
+    if (favorites.necklace !== null && 
+        favorites.necklace.combatTwo
+    ) {
+        count.NECKLACE[favorites.necklace.combatOne.name]--;
+        count.NECKLACE[favorites.necklace.combatTwo.name]--;
+    }
+
+    //check earrings
+    favorites.earrings.forEach((item) => {
+        count.EARRING[item.combatOne.name]--;
+    });
+
+    //check rings
+    favorites.rings.forEach((item) => {
+        count.RING[item.combatOne.name]--;
+    });
+
+    return count;
 }
 
 const getAllStatReqs = (
