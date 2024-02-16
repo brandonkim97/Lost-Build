@@ -48,7 +48,7 @@ const FormSchema: ZodType<DataType> = z.object({
     value: z.number({
       required_error: "Please select a value.",
     }),
-  })
+});
 
 const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     setItemData,
@@ -59,7 +59,25 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const form = useForm<DataType>({
         resolver: zodResolver(FormSchema)
-      })
+    });
+
+    useEffect(() => {
+        setIsLoading(true);
+        const loadData = async () => {
+          const load = async () => {
+            if (item && typeof item !== 'undefined') {
+              form.setValue('name', item.name);
+              form.setValue('value', item.value.toString());
+            }
+          }
+          await load()
+          .then(() => {
+            setIsLoading(false);
+          });
+        }
+    
+        loadData();
+      }, [item, form]);
 
     const handleChange = useCallback((e: any, v: any) => {
         const parsed = e === 'value' ? parseInt(v, 10) : v;

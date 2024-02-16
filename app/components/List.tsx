@@ -5,6 +5,7 @@ import React, { Suspense, useContext } from "react";
 import { AbilityStone, Accessory, Book, Favorites } from "../types";
 import { Card } from "@/components/ui/card";
 import PuffLoader from "react-spinners/PuffLoader";
+import { error } from "console";
 
 const LazyListContent = React.lazy(() => import('./ListContent'));
 
@@ -24,31 +25,34 @@ const List: React.FC<IParams> = ({
     const toast = useToast();
 
     const handleFavorites = (idx: number, type: string, item: Accessory | Book | AbilityStone) => {
-        const existingObjectString = localStorage.getItem('favorites');
-        let existingObject: Favorites = existingObjectString ? JSON.parse(existingObjectString) : {
-            accessory: {
-                necklace: null,
-                earrings: [],
-                rings: [],
-              },
-              book: [],
-              stone: null,
-        };
+        const setData = async () => {
+            const existingObjectString = localStorage.getItem('favorites');
+            let existingObject: Favorites = existingObjectString ? JSON.parse(existingObjectString) : {
+                accessory: {
+                    necklace: null,
+                    earrings: [],
+                    rings: [],
+                },
+                book: [],
+                stone: null,
+            };
 
-        //update
-        const res = update(existingObject, idx, type, item);
-        if (!res.success) {
-            toast({
-                title: res.message,
-                status: 'error',
-                isClosable: true,
-              })
-            return;
+            //update
+            const res = await update(existingObject, idx, type, item);
+            // Store the updated array back in local storage
+            localStorage.setItem('favorites', JSON.stringify(res.data));
+            setFavorite(res.data);
+
+            if (!res.success) {
+                toast({
+                    title: res.message,
+                    status: 'error',
+                    isClosable: true,
+                })
+                return;
+            }
         }
-
-        // Store the updated array back in local storage
-        localStorage.setItem('favorites', JSON.stringify(existingObject));
-        setFavorite(existingObject);
+        setData();
     }
 
     return (
@@ -70,18 +74,21 @@ const update = (arr: Favorites, idx: number, type: string, item: Accessory | Boo
                     arr.accessory.necklace = null;
                     return {
                         success: true,
-                        message: 'Necklace successfully unfavorited.'
+                        message: 'Necklace successfully unfavorited.',
+                        data: arr,
                     }
                 }
                 return {
                     success: false,
-                    message: 'You have already favorited a necklace! Please remove it and try again.'
+                    message: 'You have already favorited a necklace! Please remove it and try again.',
+                    data: arr,
                 }
             }
             arr.accessory.necklace = item as Accessory;
             return {
                 success: true,
-                message: 'Necklace successfully favorited!'
+                message: 'Necklace successfully favorited!',
+                data: arr,
             }
         case 'EARRING':
             const earringLen = arr.accessory.earrings.length;
@@ -89,19 +96,22 @@ const update = (arr: Favorites, idx: number, type: string, item: Accessory | Boo
                 arr.accessory.earrings = arr.accessory.earrings.filter((ear) => ear.uid != item.uid);
                 return {
                     success: true,
-                    message: 'Necklace successfully unfavorited.'
+                    message: 'Necklace successfully unfavorited.',
+                    data: arr,
                 }
             }
             if (earringLen < 2) {
                 arr.accessory.earrings.push(item as Accessory);
                 return {
                     success: true,
-                    message: 'Earring successfully favorited.'
+                    message: 'Earring successfully favorited.',
+                    data: arr,
                 }
             } else {
                 return {
                     success: false,
-                    message: 'You have already favorited 2 earrings. Please remove one and try again.'
+                    message: 'You have already favorited 2 earrings. Please remove one and try again.',
+                    data: arr,
                 }
             } 
         case 'RING':
@@ -110,18 +120,21 @@ const update = (arr: Favorites, idx: number, type: string, item: Accessory | Boo
                 arr.accessory.rings = arr.accessory.rings.filter((ring) => ring.uid != item.uid);
                 return {
                     success: true,
-                    message: 'Ring successfully unfavorited.'
+                    message: 'Ring successfully unfavorited.',
+                    data: arr,
                 }
             } else if (ringLen < 2) {
                 arr.accessory.rings.push(item as Accessory);
                 return {
                     success: true,
-                    message: 'Ring successfully favorited.'
+                    message: 'Ring successfully favorited.',
+                    data: arr,
                 }
             } else {
                 return {
                     success: false,
-                    message: 'You have already favorited 2 rings. Please remove one and try again.'
+                    message: 'You have already favorited 2 rings. Please remove one and try again.',
+                    data: arr,
                 }
             } 
         case 'BOOK':
@@ -130,19 +143,22 @@ const update = (arr: Favorites, idx: number, type: string, item: Accessory | Boo
                 arr.book = arr.book.filter((b) => b.uid != item.uid);
                 return {
                     success: true,
-                    message: 'Book successfully unfavorited.'
+                    message: 'Book successfully unfavorited.',
+                    data: arr,
                 }
             }
             if (bookLen < 2) {
                 arr.book.push(item as Book);
                 return {
                     success: true,
-                    message: 'Book successfully favorited.'
+                    message: 'Book successfully favorited.',
+                    data: arr,
                 }
             } else {
                 return {
                     success: false,
-                    message: 'You have already favorited 2 books. Please remove one and try again.'
+                    message: 'You have already favorited 2 books. Please remove one and try again.',
+                    data: arr,
                 }
             }
         case 'STONE':
@@ -151,25 +167,28 @@ const update = (arr: Favorites, idx: number, type: string, item: Accessory | Boo
                     arr.stone = null;
                     return {
                         success: true,
-                        message: 'Stone successfully unfavorited.'
+                        message: 'Stone successfully unfavorited.',
+                        data: arr,
                     }
                 }
                 return {
                     success: false,
-                    message: 'You have already favorited a stone! Please remove it and try again.'
+                    message: 'You have already favorited a stone! Please remove it and try again.',
+                    data: arr,
                 }
             }
             arr.stone = item as AbilityStone;
             return {
                 success: true,
-                message: 'Stone successfully favorited!'
+                message: 'Stone successfully favorited!',
+                data: arr,
             }
         default:
             return {
                 success: false,
-                message: 'Something went wrong! Please try again.'
+                message: 'Something went wrong! Please try again.',
+                data: arr,
             }
-            break;
     }
 }
 
@@ -181,4 +200,4 @@ const Loading = () => {
     )
 }
 
-export default List;
+export default React.memo(List);

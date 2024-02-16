@@ -63,6 +63,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
 }) => {
     const addAbilityStoneModal = useAddAbilityStoneModal();
     const { isEdit, item, index } = addAbilityStoneModal;
+    const [isLoading, setIsLoading] = useState(false);
     const form = useForm<AddAbilityStoneData>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
@@ -70,9 +71,28 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         }
     });
 
-    // useEffect(() => {
-    //     setStone(dataInitialState);
-    // }, [dataInitialState]);
+    useEffect(() => {
+        setIsLoading(true);
+        const loadData = async () => {
+          const load = async () => {
+            if (item && typeof item !== 'undefined') {
+                console.log(item)
+              form.setValue('engravingOne', item.engravingOne.name);
+              form.setValue('engravingOneValue', item.engravingOne.value);
+              form.setValue('engravingTwo', item.engravingTwo.name);
+              form.setValue('engravingTwoValue', item.engravingTwo.value);
+              form.setValue('reduction', item.reduction.name);
+              form.setValue('reductionValue', item.reduction.value);
+            }
+          }
+          await load()
+          .then(() => {
+            setIsLoading(false);
+          });
+        }
+    
+        loadData();
+      }, [item, form]);
 
     
     // const handleChange = useCallback((e: string, v: string) => setStone({ ...stone, [e]: v}), [stone]);

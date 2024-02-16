@@ -1,5 +1,5 @@
 import { isReduction } from "../libs/getItemData";
-import { AbilityStone, Accessory, Build, Engraving, Necklace } from "../types";
+import { AbilityStone, Accessory, Build, Engraving, Favorites, Necklace } from "../types";
 require('dotenv').config();
 
 interface DataParams {
@@ -7,6 +7,7 @@ interface DataParams {
     engravingBooks: Engraving[];
     abilityStones: AbilityStone[];
     combatStats: { [key: string]: string };
+    favorites: Favorites;
 }
 
 interface DesiredParams {
@@ -47,8 +48,18 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
     });
     //generate all engraving book pairs
     let bookPairs = generateBookPairs(filteredBooks);
+
     // console.log(bookPairs)
     const allStatReqs = getAllStatReqs(data.combatStats);
+
+     //check favorites to see if it matches preferred combat stats
+     if (!isFavoritesValid(data.favorites.accessory, allStatReqs)) {
+        return {
+            status: 'error',
+            message: 'Your favorites do not match your preferred combat stats! Please try again.',
+            data: [],
+        };
+     } 
 
     //create builds
     const unique = new Set<string>;
@@ -73,7 +84,18 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
 
     //get top 3 builds
     const top3 = getTopThreeBuilds(levels, desiredEngravings);
-    return top3;
+    if (!top3.length) {
+        return {
+            status: 'error',
+            message: 'No builds could be created!',
+            data: []
+        }
+    }
+     return {
+        status: 'success',
+        message: 'Builds created!',
+        data: top3,
+    };
 }
 
 function generateCombination(
@@ -89,7 +111,7 @@ function generateCombination(
     if (hasAllAccessories(count)) {
         //push build to build array
         let key = (currentBuild.map(accessory => accessory.uid)).join('-');
-        key += `-${pair[0].name}-${pair[1].name}-${stone.engravingOne.name}-${stone.engravingOne.value}-${stone.engravingTwo.name}-${stone.engravingTwo.value}`;
+        key += `-${pair[0].name}-${pair[1].name}-${stone.uid}`;
         if (!unique.has(key)) {
             builds.push(createBuild(currentBuild, pair, stone));
             unique.add(key);
@@ -243,7 +265,43 @@ function push(map: Map<number, EngravingLevels[]>, key: number, value: Engraving
     }
 }
 
-const getAllStatReqs = (stats: { [key: string]: string }) => {
+const isFavoritesValid = (
+    favorites: { 
+        necklace: Accessory | null, 
+        earrings: Accessory[],
+        rings: Accessory[],
+    },
+    count: Count
+) => {
+    let valid = true;
+    //validate necklace
+    if (favorites.necklace !== null && 
+            favorites.necklace.combatTwo &&
+                (count.NECKLACE[favorites.necklace.combatOne.name] === 0 ||
+                    count.NECKLACE[favorites.necklace.combatTwo.name] === 0)
+    ) valid = false;
+
+    //validate earring
+    favorites.earrings.forEach((item) => {
+        console.log(item.combatOne.name, count.EARRING[item.combatOne.name], !count.EARRING[item.combatOne.name])
+        if (count.EARRING[item.combatOne.name] === 0) {
+            valid = false;
+        }
+    });
+
+    //validate ring
+    favorites.rings.forEach((item) => {
+        console.log(item.combatOne.name, count.RING[item.combatOne.name], !count.RING[item.combatOne.name])
+        if (count.RING[item.combatOne.name] === 0) valid = false;
+    });
+
+    //valid
+    return valid;
+}
+
+const getAllStatReqs = (
+    stats: { [key: string]: string }, 
+) => {
     const res: { [key: string]: { [key: string]: number }} = {
         NECKLACE: {
             'CRIT': 0,
@@ -296,7 +354,7 @@ const getAllStatReqs = (stats: { [key: string]: string }) => {
 const hasAllAccessories = (count: Count) => {
     for (const acc in count) {
         for (const stat in count[acc]) {
-            if (count[acc][stat] !== 0) return false;
+            if (count[acc][stat] > 0) return false;
         }
     }
 

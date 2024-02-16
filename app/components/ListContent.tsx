@@ -204,4 +204,4 @@ const ListContent: React.FC<IParams> = ({ data, setItemData, handleFavorites, ty
     return mapContent;
 }
 
-export default ListContent;
+export default React.memo(ListContent);

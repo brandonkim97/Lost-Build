@@ -234,25 +234,29 @@ export default function Home() {
             favorites: favorites,
           })
         })
-        const fetchedData = await res.json();
-        const formattedData = await formatLevels(fetchedData)
+        const { status, message, data } = await res.json();
+        if (status === 'error') {
+          console.log('not valid/error!', status);
+          reject(message);
+        }
+        const formattedData = await formatLevels(data)
         setShowNoBuilds(formattedData.length === 0);
         setBuilds(formattedData);
-        console.log('fetched data:', formattedData);
+        console.log('fetched data:', status, message, data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        reject();
+        reject(error);
       } finally {
         setIsLoading(false);
         resolve()
       }
     });
     toast.promise(getBuilds, {
-      success: { title: 'Builds created!', description: 'Please check them out.', duration: 3000, isClosable: true },
-      error: { title: 'Oops, something went wrong!', description: 'Please try again later.', duration: 3000, isClosable: true },
+      success: { title: 'Builds created!', description: 'Please check them out.', duration: 5000, isClosable: true },
+      error: (error) => ({ title: 'Oops, something went wrong!', description: error.toString(), duration: 5000, isClosable: true }),
       loading: { title: 'Generating builds...', description: 'Please wait.' },
     });
-  }, [accessories, books, stones, values.desiredEngravings, toast, values.desiredStats]);  
+  }, [accessories, books, stones, values.desiredEngravings, toast, values.desiredStats, favorites]);  
 
   const handleEngravingChange = (e: string, v: string) => {
     form.setValue(e as FieldPath, v);
@@ -295,6 +299,7 @@ export default function Home() {
 
 
   const setItemData: Function = (e: any, func: (e: any) => void): void => func(e);
+
 
   return (
     <>

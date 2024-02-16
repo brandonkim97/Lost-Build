@@ -12,6 +12,7 @@ const useOptions = (
     field?: any,
 ) => {
     const isScrollable = (e: string) => [
+      'name',
       'engravingOne', 
       'engravingTwo', 
       'desiredEngravings.engravingOne',
