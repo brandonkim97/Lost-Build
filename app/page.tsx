@@ -306,9 +306,9 @@ export default function Home() {
     {isLoading ? <Loading /> :
     <EngravingContext.Provider value={engravings}>
       <main className="flex min-h-screen md:w-[1500px] flex-col py-24">
-        <AddAccessory setItemData={(e) => setItemData(e, setAccessories)} />
-        <AddEngravingBook setItemData={(e) => setItemData(e, setBooks)} />
-        <AddAbilityStone engravingOptions={combatEngravings} setItemData={(e) => setItemData(e, setStones)}/>
+        <AddAccessory setItemData={(e) => setItemData(e, setAccessories)}  setFavorite={(e) => setItemData(e, setFavorites)} />
+        <AddEngravingBook setItemData={(e) => setItemData(e, setBooks)}  setFavorite={(e) => setItemData(e, setFavorites)} />
+        <AddAbilityStone engravingOptions={combatEngravings} setItemData={(e) => setItemData(e, setStones)}  setFavorite={(e) => setItemData(e, setFavorites)} />
         <Flex gap="6" flexDirection="row" flex={1} marginBottom={6}>
           <FavoriteContext.Provider value={favorites}>
             <Box gap="4" className="w-1/3">

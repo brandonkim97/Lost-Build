@@ -1,8 +1,9 @@
 import { AddAbilityStoneData } from "../components/inputs/AddAbilityStone";
 import { AddAccessoryData } from "../components/inputs/AddAccessory";
+import { Accessory } from "../types";
 
-export function formatAccessory(acc: any) {
-  if (!acc || typeof acc === 'undefined') return [];
+export function formatAccessory(acc: any): Accessory | false {
+  if (!acc || typeof acc === 'undefined') return false;
 
   if (acc?.type !== 'NECKLACE') {
       return {

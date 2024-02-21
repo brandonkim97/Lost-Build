@@ -16,10 +16,13 @@ import { useForm } from "react-hook-form"
 import { ZodType, z } from "zod"
 import { Form } from "@/components/ui/form"
 import FormInput from '../form/FormInput';
+import { AbilityStone } from "@/app/types";
+import updateFavorites from "@/app/utils/updateFavorites";
 
 interface AddAbilityStoneProps  {
     engravingOptions: { [key: string]: string };
     setItemData: (e: any) => void;
+    setFavorite: (e: any) => void;
 }
 
 type DataType = {
@@ -37,6 +40,7 @@ export interface AddAbilityStoneData {
 }
 
 const FormSchema: ZodType<AddAbilityStoneData> = z.object({
+    uid: z.number().optional(),
     engravingOne: z.string({
       required_error: "Please select an engraving.",
     }),
@@ -59,7 +63,8 @@ const FormSchema: ZodType<AddAbilityStoneData> = z.object({
 
 const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     engravingOptions,
-    setItemData
+    setItemData,
+    setFavorite,
 }) => {
     const addAbilityStoneModal = useAddAbilityStoneModal();
     const { isEdit, item, index } = addAbilityStoneModal;
@@ -83,6 +88,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
               form.setValue('engravingTwoValue', item.engravingTwo.value);
               form.setValue('reduction', item.reduction.name);
               form.setValue('reductionValue', item.reduction.value);
+              form.setValue('uid', item.uid);
             }
           }
           await load()
@@ -131,6 +137,11 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
 
         if (isEdit) {
             stoneArray[index as number] = formattedStone;
+            const favorites = localStorage.getItem('favorites');
+            const favoritesObj = favorites ? JSON.parse(favorites) : null;
+            const updatedFavorites = updateFavorites(favoritesObj, formattedStone as AbilityStone, 'STONE');
+            localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+            setFavorite(updatedFavorites);
         } else {
             stoneArray.push(formattedStone);
         }

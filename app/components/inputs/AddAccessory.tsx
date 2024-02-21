@@ -26,9 +26,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import FormInput from '../form/FormInput';
+import { Accessory } from '@/app/types';
+import updateFavorites from '@/app/utils/updateFavorites';
 
 interface AddAccessoryProps  {
     setItemData: (e: any) => void;
+    setFavorite: (e: any) => void;
 }
 
 type DataType = {
@@ -89,7 +92,8 @@ const FormSchema: ZodType<AddAccessoryData> = z.object({
   
   
 const AddAccessory: React.FC<AddAccessoryProps> = ({
-  setItemData
+  setItemData,
+  setFavorite,
 }) => {
   const engravingOptions = useContext(EngravingContext);
   const addAccessoryModal = useAddAccessoryModal();
@@ -109,21 +113,22 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
     const loadData = async () => {
+      setIsLoading(true);
       const load = async () => {
         if (item && typeof item !== 'undefined') {
           form.setValue('type', item.type);
           form.setValue('combatOne', item.combatOne.name);
           form.setValue('combatTwo', item.combatTwo?.name);
-          form.setValue('combatOneValue', item.combatOne.value.toString());
-          form.setValue('combatTwoValue', item.combatTwo?.value.toString());
+          form.setValue('combatOneValue', item.combatOne.value);
+          form.setValue('combatTwoValue', item.combatTwo?.value);
           form.setValue('engravingOne', item.engravingOne.name);
           form.setValue('engravingTwo', item.engravingTwo.name);
           form.setValue('engravingOneValue', item.engravingOne.value);
           form.setValue('engravingTwoValue', item.engravingTwo.value);
           form.setValue('reduction', item.reduction.name);
-          form.setValue('reductionValue', item.reduction.value.toString());
+          form.setValue('reductionValue', item.reduction.value);
+          form.setValue('uid', item.uid);
         }
       }
       await load()
@@ -164,6 +169,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
 
   const onSubmit = (d: any) => {
     setIsLoading(true);
+    console.log('submitting', isEdit)
     if (!isEdit) d.uid = Date.now();
     const existingArrayString = localStorage.getItem('accessories');
     const existingArray = existingArrayString ? JSON.parse(existingArrayString) : [];
@@ -173,6 +179,13 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
     // Add new data to the array
     if (isEdit) {
       existingArray[index as number] = formattedAccessory;
+      const favorites = localStorage.getItem('favorites');
+      const favoritesObj = favorites ? JSON.parse(favorites) : null;
+      if (formattedAccessory) {
+        const updatedFavorites = updateFavorites(favoritesObj, formattedAccessory as Accessory, formattedAccessory.type);
+        localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+        setFavorite(updatedFavorites);
+      }
     } else {
       existingArray.push(formattedAccessory);
     }

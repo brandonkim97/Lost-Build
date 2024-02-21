@@ -50,6 +50,7 @@ export default async function generateBuild(data: DataParams, desiredEngravings:
 
     //generate all engraving book pairs
     const bookPairs = generateBookPairs(filteredBooks, data.favorites.book);
+    console.log(data.favorites.book)
 
     //get stone preferences
     const preferredStones = generateStonePreference(filteredStones, data.favorites.stone);

@@ -31,9 +31,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import FormInput from '../form/FormInput';
+import updateFavorites from "@/app/utils/updateFavorites";
+import { Book, Favorites } from "@/app/types";
 
 interface AddEngravingBookProps  {
     setItemData: (e: any) => void;
+    setFavorite: (e: any) => void;
 }
 
 type DataType = {
@@ -52,6 +55,7 @@ const FormSchema: ZodType<DataType> = z.object({
 
 const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     setItemData,
+    setFavorite
 }) => {
     const engravingOptions = useContext(EngravingContext);
     const addEngravingBookModal = useAddEngravingBookModal();
@@ -67,7 +71,8 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
           const load = async () => {
             if (item && typeof item !== 'undefined') {
               form.setValue('name', item.name);
-              form.setValue('value', item.value.toString());
+              form.setValue('value', item.value);
+              form.setValue('uid', item.uid)
             }
           }
           await load()
@@ -97,6 +102,11 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
 
         if (isEdit) {
             bookArray[index as number] = formattedArray;
+            const favorites = localStorage.getItem('favorites');
+            const favoritesObj = favorites ? JSON.parse(favorites) : null;
+            const updatedFavorites = updateFavorites(favoritesObj, formattedArray as Book, 'BOOK');
+            localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+            setFavorite(updatedFavorites);
         } else {
             bookArray.push(formattedArray);
         }

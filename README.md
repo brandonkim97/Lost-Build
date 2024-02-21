@@ -11,4 +11,5 @@
 - Ability to add characters to filter ability stones
 
 ## Issues
-When a dropdown is active, selecting the same value does not close the dropdown.
+- When a dropdown is active, selecting the same value does not close the dropdown.
+- When favoriting an item/book/stone, it may duplicate in the build generation.
