@@ -28,9 +28,9 @@ const Item: React.FC<IParams> = ({
 
     return (
         <Box className={`
-            border p-[2px] inline-block 
-            hover:cursor-pointer hover:border-sky-700
-            ${isActive ? 'border-sky-700 shadow-inner' : 'border-gray-800'}
+            border p-[2px] inline-block shadow-inner
+            hover:cursor-pointer hover:border-sky-700 
+            ${isActive ? 'border-sky-700' : 'border-gray-800'}
         `}>
             <Box className='border border-zinc-700 p-[1px]'>
                 <Image src={image} alt='Equipped Item' />
