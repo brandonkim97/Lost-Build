@@ -93,6 +93,11 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
         form.reset();
     }
 
+    const handleClose = () => {
+        handleClear();
+        addEngravingBookModal.onClose();
+    }
+
     const onSubmit = (d: any) => {
         setIsLoading(true);
         if (!isEdit) d.uid = Date.now();
@@ -159,7 +164,7 @@ const AddEngravingBook: React.FC<AddEngravingBookProps> = ({
     return (
         <Modal
             isOpen={addEngravingBookModal.isOpen}
-            onClose={addEngravingBookModal.onClose}
+            onClose={handleClose}
             onSubmit={form.handleSubmit(onSubmit)}
             actionLabel="Submit"
             secondaryAction={handleClear}

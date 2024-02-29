@@ -203,7 +203,7 @@ const AddAccessory: React.FC<AddAccessoryProps> = ({
   }
 
   const handleClose = () => {
-    form.reset();
+    handleClear();
     addAccessoryModal.onClose();
   }
 

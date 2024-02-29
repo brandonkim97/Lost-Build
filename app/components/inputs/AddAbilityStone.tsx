@@ -128,6 +128,11 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         form.reset();
     }    
 
+    const handleClose = () => {
+        handleClear();
+        addAbilityStoneModal.onClose();
+    }
+
     const onSubmit = (d: any) => {
         //add validation
         if (!isEdit) d.uid = Date.now();
@@ -226,7 +231,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
         return (
             <Modal
                 isOpen={addAbilityStoneModal.isOpen}
-                onClose={addAbilityStoneModal.onClose}
+                onClose={handleClose}
                 onSubmit={form.handleSubmit(onSubmit)}
                 actionLabel="Edit"
                 secondaryAction={handleClear}
@@ -240,7 +245,7 @@ const AddAbilityStone: React.FC<AddAbilityStoneProps> = ({
     return (
         <Modal
             isOpen={addAbilityStoneModal.isOpen}
-            onClose={addAbilityStoneModal.onClose}
+            onClose={handleClose}
             onSubmit={form.handleSubmit(onSubmit)}
             actionLabel="Submit"
             secondaryAction={handleClear}
